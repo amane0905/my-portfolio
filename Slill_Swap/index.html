@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <!-- figma:head-start フィグマから自動生成された設定-->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skill-Swap — 時間でスキルを交換しよう</title>
+  <!-- figma:head-end -->
+ˆ
+  <!-- Google Fontsの事前接続（読み込み高速化 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- フォントスタイルの読み込み（Noto Sans JP） -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- 外付けCSSファイルの読み込み -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <!-- ===== AUTH SCREEN　登録・ログイン===== -->
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+      <!-- サービスロゴとアイコン表示エリア -->
+      <div class="auth-logo">
+        <span class="logo-icon">☀</span>
+        <span class="logo-text">Skill-Swap</span>
+      </div>
+      <!-- キャッチコピー -->
+      <p class="auth-tagline">おひさまコインで学び合う、学生だけのサークル</p>
+      <!-- 個人情報についての注意書きカード -->
+      <div class="privacy-notice" role="note">
+        <div class="privacy-notice__icon">🔒</div>
+        <div class="privacy-notice__body">
+          <strong>個人情報の取り扱いについて</strong>
+          <ul>
+            <li>入力情報は本サービスの認証目的にのみ使用します。</li>
+            <li>第三者への提供・販売は一切行いません。</li>
+            <li>DM内での住所・電話番号の共有はお控えください。</li>
+            <li>不審なやり取りは運営へご報告ください。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ログイン / 新規登録の表示切り替えタブ -->
+      <div class="auth-container"> 
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" role="tab" aria-selected="true" data-tab="login">ログイン</button>
+        <button class="auth-tab" role="tab" aria-selected="false" data-tab="register">新規登録</button>
+      </div>
+      
+      <!-- ログイン用フォーム -->
+      <form id="login-form" class="auth-form" novalidate>
+        <!-- メールアドレス入力項目 -->
+        <div class="form-group">
+          <label for="login-email">学校メールアドレス</label>
+          <input type="email" id="login-email" placeholder="例: s123456@university.ac.jp" autocomplete="email" />
+          <span class="form-hint">大学・専門学校のメールアドレスを使用してください</span>
+        </div>
+        <!-- 例：ログインのパスワード欄 -->
+        <div class="form-group">
+            <label for="login-password">パスワード</label>
+            <div class="password-wrap" style="position: relative;">
+                <input type="password" id="login-password" placeholder="パスワードを入力" autocomplete="current-password"/>
+                <button type="button" id="toggle-login-pass" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">👀</button>
+            </div>
+            <span id="forgot-password-link">パスワードを忘れました</span>
+        </div>
+
+        <!-- ログイン送信ボタン -->
+        <button type="submit" class="btn btn--primary btn--full login-btn">ログイン ☀</button>
+        <p class="form-error" id="login-error" role="alert" aria-live="polite"></p>
+      </form>
+
+      <!-- 新規登録用フォーム -->
+      <form id="register-form" class="auth-form hidden" novalidate>
+        <!-- 本名入力項目（運営の本人確認用。他のユーザーには表示されません） -->
+        <div class="form-group">
+          <label for="reg-realname">本名（氏名） <span class="required">*</span></label>
+          <input type="text" id="reg-realname" placeholder="例：山田 太郎" autocomplete="name" />
+          <span class="form-hint">🔒 本人確認のためのみに使用し、他のユーザーには表示されません</span>
+        </div>
+        <!-- ニックネーム入力項目 -->
+        <div class="form-group">
+          <label for="reg-name">ニックネーム（他のユーザーに表示されます） <span class="required">*</span></label>
+          <input type="text" id="reg-name" placeholder="例：さくら、taro123" autocomplete="nickname" />
+        </div>
+        <!-- 学校メールアドレス入力項目（登録用） -->
+        <div class="form-group">
+          <label for="reg-email">学校メールアドレス <span class="required">*</span></label>
+          <input type="email" id="reg-email" placeholder="例: s123456@university.ac.jp" autocomplete="email" />
+          <span class="form-hint">ac.jp / edu 等の学校ドメインが必要です（学生認証）</span>
+        </div>
+        <!-- 学校名入力項目 -->
+        <div class="form-group">
+          <label for="reg-school">学校名 <span class="required">*</span></label>
+          <input type="text" id="reg-school" placeholder="学校名を検索" />
+          <ul id="school-results"></ul>
+        </div>
+        <!-- パスワード設定項目（登録用） -->
+        <div class="form-group">
+          <label for="reg-password">パスワード <span class="required">*</span></label>
+          <input type="password" id="reg-password" placeholder="8文字以上" autocomplete="new-password" />
+        </div>
+        <!-- 利用規約の同意チェックボックス -->
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="reg-agree" />
+            <span id="open-terms" class="terms-link">
+                個人情報の取り扱い
+            </span>
+          </label>
+        </div>
+        <!-- 新規登録送信ボタン -->
+        <button type="submit" id="save-btn" class="btn btn--primary btn--full">学生認証して登録🌱</button>
+        
+        <!-- 新規登録エラーメッセージ表示場所 -->
+        <p class="form-error" id="register-error" role="alert" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+  </div>
+
+  <!-- ===== メール確認待ち画面（学生認証） ===== -->
+  <div id="verify-screen" class="auth-screen hidden">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <span class="logo-icon">📧</span>
+        <span class="logo-text">Skill-Swap</span>
+      </div>
+      <h2 style="text-align:center;margin:8px 0 4px">メールを確認してください</h2>
+      <p class="auth-tagline" id="verify-target-email">登録したメールアドレス宛に確認メールを送信しました。</p>
+      <div class="form-error" id="verify-info" role="status" style="text-align:center;margin:8px 0;"></div>
+      <p style="font-size:.82rem;color:var(--text-soft);text-align:center;margin:0 0 16px;">
+        届いたメール内のリンクをクリックすると、学生認証（メール確認）が完了します。<br>
+        確認後、下の「確認できたか確認する」ボタンを押してください。
+      </p>
+      <button type="button" class="btn btn--primary btn--full" id="verify-check-btn">認証できたか確認する</button>
+      <button type="button" class="btn btn--ghost btn--full" id="verify-resend-btn" style="margin-top:8px">確認メールを再送信する</button>
+      <button type="button" class="btn btn--ghost btn--full" id="verify-logout-btn" style="margin-top:8px">ログアウトする</button>
+    </div>
+  </div>
+
+  <!-- ===== MAIN APP メインアプリ===== -->
+  <div id="app" class="app hidden">
+
+    <!-- 通知バナー表示エリア -->
+    <div id="notification-banner" class="notification-banner hidden" role="alert" aria-live="assertive">
+      <span class="notif-icon">🎉</span>
+      <span id="notif-message"></span>
+      <button class="notif-close" id="notif-close-btn" aria-label="閉じる">✕</button>
+    </div>
+
+    <!-- ヘッダーエリア　（ロゴ・所持コイン・通知） -->
+    <header class="app-header">
+      <div class="header-inner">
+        <!-- アプリロゴ --> 
+        <div class="header-logo">
+          <span class="logo-icon" style="font-size:1.3rem">☀</span>
+          <span class="logo-text" style="font-size:1.2rem">Skill-Swap</span>
+        </div>
+        <!-- 所持コイン表示エリア -->
+        <div class="header-coin">
+          <span class="coin-icon">☀</span>
+          <span id="header-points">0</span>
+          <span style="font-size:.72rem;opacity:.7">Time</span>
+        </div>
+        <!-- ログアウトボタン -->
+        <button class="btn btn--ghost btn--sm logout-btn" id="logout-btn">ログアウト</button>
+      </div>
+    </header>
+
+    <!-- メインコンテンツ切り替え表示エリア -->
+    <main class="app-main">
+
+      <!-- タイムライン / スキル検索画面 -->
+      <section id="view-home" class="view active" aria-label="スキル一覧">
+        <div class="view-header">
+          <h1>おひさまコイン 🌻</h1>
+          <p class="view-sub">時間を交換して、みんなで学び合おう！</p>
+        </div>
+
+        <!-- フィルタータブ：「求む」（助けてほしい投稿）と「与える」（教えられる投稿）を切り替える -->
+        <div class="filter-tabs" role="tablist">
+          <button class="filter-tab active-seek" role="tab" id="tab-seek" aria-selected="true">
+            🆘 求む（助けて！）
+          </button>
+          <button class="filter-tab" role="tab" id="tab-give" aria-selected="false">
+            ✨ 与える（教える！）
+          </button>
+        </div>
+
+        <!-- カテゴリ選択チップ：クリックしたカテゴリでスキル一覧を絞り込む -->
+        <div class="category-grid" role="list" aria-label="カテゴリ">
+          <button class="cat-chip active" data-cat="" role="listitem">
+            <span class="cat-emoji">🏠</span>すべて
+          </button>
+          <button class="cat-chip" data-cat="言語" role="listitem">
+            <span class="cat-emoji">🗣</span>言語
+          </button>
+          <button class="cat-chip" data-cat="プログラミング" role="listitem">
+            <span class="cat-emoji">💻</span>プログラミング
+          </button>
+          <button class="cat-chip" data-cat="デザイン" role="listitem">
+            <span class="cat-emoji">🎨</span>デザイン
+          </button>
+          <button class="cat-chip" data-cat="音楽" role="listitem">
+            <span class="cat-emoji">🎵</span>音楽
+          </button>
+          <button class="cat-chip" data-cat="数学・理系" role="listitem">
+            <span class="cat-emoji">📐</span>数学・理系
+          </button>
+          <button class="cat-chip" data-cat="ビジネス" role="listitem">
+            <span class="cat-emoji">💼</span>ビジネス
+          </button>
+          <button class="cat-chip" data-cat="その他" role="listitem">
+            <span class="cat-emoji">🌟</span>その他
+          </button>
+        </div>
+
+        <!-- キーワード検索バー：入力文字でスキル一覧をリアルタイム絞り込み -->
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="search" id="search-input" placeholder="スキルを検索（例：英語、Python…）" aria-label="スキル検索" />
+          </div>
+        </div>
+
+        <!-- 統計バー：登録学生数・投稿数・マッチ成立数を表示（動的に数値が更新される） -->
+        <div class="stats-bar">
+          <div class="stat-item">
+            <span class="stat-num" id="stat-users">0</span>
+            <span class="stat-label">登録学生</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num" id="stat-skills">0</span>
+            <span class="stat-label">投稿数</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num" id="stat-matches">0</span>
+            <span class="stat-label">マッチ成立</span>
+          </div>
+        </div>
+
+        <!-- スキル投稿一覧：フィルター・カテゴリ・検索条件に応じてJSでカードを描画するエリア -->
+        <div class="skill-grid" id="skill-grid" role="list" aria-label="スキル一覧"></div>
+        <div class="empty-state hidden" id="empty-state" role="status">
+          <span class="empty-icon">🌱</span>
+          <p>条件に一致するスキルが見つかりませんでした</p>
+        </div>
+      </section>
+
+      <!-- 投稿画面：新しいスキル（求む／与える）を投稿するフォーム  -->
+      <section id="view-post" class="view hidden" aria-label="スキルを投稿">
+        <div class="view-header">
+          <h1>願いごとの木 🌳</h1>
+          <p class="view-sub">スキルを投稿して交換相手を探そう</p>
+        </div>
+
+        <!-- 前借りシステムの説明：ポイントが0でも-1.0Timeまでは投稿・利用できることを案内するボックス  -->
+        <div class="pre-borrow-box" style="margin-bottom:20px">
+          <span class="pb-icon">💡</span>
+          <div class="pb-text">
+            <strong>ポイント0でも安心！前借りシステム</strong>
+            <p>-1.0 Timeまで前借りOK。先に助けてもらって、後で教えてあげよう！</p>
+          </div>
+        </div>
+        <!-- スキル投稿フォーム本体 -->
+        <div class="form-card">
+          <form id="post-form" novalidate>
+            <!-- 投稿タイプ選択：「求む」か「与える」かを選ぶプルダウン -->
+            <div class="form-group">
+              <label for="post-type">投稿タイプ <span class="required">*</span></label>
+              <select id="post-type">
+                <option value="seek">🆘 求む — 助けてほしい！</option>
+                <option value="give">✨ 与える — 教えてあげる！</option>
+              </select>
+            </div>
+            <!-- スキル内容の入力（例：英語会話、Pythonの基礎など） -->
+            <div class="form-group">
+              <label for="post-skill">スキル内容 <span class="required">*</span></label>
+              <input type="text" id="post-skill" placeholder="例：英語会話、Pythonの基礎、ギター" />
+            </div>
+
+            <div class="form-row">
+              <!-- カテゴリ選択：スキル一覧のカテゴリ絞り込みと連動する分類 -->
+              <div class="form-group">
+                <label for="post-category">カテゴリ <span class="required">*</span></label>
+                <select id="post-category">
+                  <option value="">選択してください</option>
+                  <option value="言語">言語</option>
+                  <option value="プログラミング">プログラミング</option>
+                  <option value="デザイン">デザイン</option>
+                  <option value="音楽">音楽</option>
+                  <option value="数学・理系">数学・理系</option>
+                  <option value="ビジネス">ビジネス</option>
+                  <option value="その他">その他</option>
+                </select>
+              </div>
+              <!-- 専門レベル選択：レベルごとにポイント計算の係数が変わる（初級×1.0～専門家×3.0） -->
+              <div class="form-group">
+                <label for="post-level">専門レベル <span class="required">*</span></label>
+                <select id="post-level">
+                  <option value="">選択してください</option>
+                  <option value="初級">初級（係数 ×1.0）</option>
+                  <option value="中級">中級（係数 ×1.5）</option>
+                  <option value="上級">上級（係数 ×2.0）</option>
+                  <option value="専門家">専門家（係数 ×3.0）</option>
+                </select>
+              </div>
+            </div>
+            <!-- 提供・希望時間の選択（30分～120分） -->
+            <div class="form-group">
+              <label for="post-time">提供・希望時間 <span class="required">*</span></label>
+              <select id="post-time">
+                <option value="30">30分</option>
+                <option value="45">45分</option>
+                <option value="60">60分</option>
+                <option value="90">90分</option>
+                <option value="120">120分</option>
+              </select>
+            </div>
+            <!-- 詳細・メッセージの自由記述欄 -->
+            <div class="form-group">
+              <label for="post-desc">詳細・メッセージ <span class="required">*</span></label>
+              <textarea id="post-desc" rows="4" placeholder="どんな内容か、対象レベル、希望スタイルなど"></textarea>
+            </div>
+            <!-- 交換希望スキルの入力（任意項目：お互いにスキルを教え合いたい場合に指定） -->
+            <div class="form-group">
+              <label for="post-want">交換希望スキル（任意）</label>
+              <input type="text" id="post-want" placeholder="例：Pythonを教わりたい" />
+            </div>
+            <!-- ポイントプレビュー：選択した時間×専門レベル係数で自動計算されたポイントをリアルタイム表示 -->
+            <div class="coefficient-preview" id="coeff-preview" aria-live="polite">
+              <div class="coeff-label">☀ スキルポイント（時間 × 係数）</div>
+              <div class="coeff-value" id="coeff-value">— Time</div>
+              <div class="coeff-hint">ポイントが近い相手とマッチしやすくなります</div>
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--full">投稿する 🌻</button>
+            <p class="form-error" id="post-error" role="alert" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>
+
+      <!-- メッセージ画面：会話一覧とチャット画面の2ページ構成（DM機能） -->
+      <section id="view-messages" class="view hidden">
+
+        <!-- ぺージ1：マッチした相手との会話一覧 -->
+        <div id="msg-page-list" class="msg-page">
+          <div class="view-header">
+            <h1>メッセージ 💬</h1>
+            <p class="view-sub">マッチした相手と話し合おう</p>
+          </div>
+          <div class="conv-list">
+            <div id="conv-list-inner"></div>
+          </div>
+        </div>
+
+        <!-- ページ2：個別チャット画面（会話一覧から選択すると表示） -->
+        <div id="msg-page-chat" class="msg-page hidden">
+          <header class="chat-header">
+            <!-- 会話一覧へ戻るボタン -->
+            <button class="chat-back-btn" id="chat-back-btn" aria-label="一覧へ戻る">‹</button>
+            <!-- チャット相手のアバター・名前・スキル情報 -->
+            <div class="chat-peer-info">
+              <div class="avatar" id="chat-avatar"></div>
+              <div>
+                <div class="chat-peer-name" id="chat-peer-name"></div>
+                <div class="chat-peer-skill" id="chat-peer-skill"></div>
+              </div>
+            </div>
+            <!-- 音声通話・ビデオ通話の発信ボタン、その他メニュー -->
+            <div class="chat-call-btns">
+              <button class="chat-call-btn" id="btn-voice-call" title="音声通話" aria-label="音声通話">📞</button>
+              <button class="chat-call-btn" id="btn-video-call" title="ビデオ通話" aria-label="ビデオ通話">📹</button>
+              <button class="chat-call-btn" id="chat-menu-btn" title="その他の操作" aria-label="その他の操作" aria-haspopup="true">⋮</button>
+            </div>
+          </header>
+          <!-- チャット相手に対する操作メニュー（ブロック・通報） -->
+          <div class="chat-menu-dropdown hidden" id="chat-menu-dropdown" role="menu">
+            <button class="chat-menu-item" id="chat-menu-report" role="menuitem">🚩 このユーザーを通報する</button>
+            <button class="chat-menu-item chat-menu-item--danger" id="chat-menu-block" role="menuitem">🚫 このユーザーをブロックする</button>
+          </div>
+          <!-- チャットメッセージ表示エリア（送受信履歴） -->
+          <div class="chat-messages" id="chat-messages" role="log" aria-live="polite"></div>
+          <form class="chat-input-form" id="chat-input-form" novalidate>
+            <div class="privacy-mini">🔒 住所・電話番号など個人情報の送信はご遠慮ください</div>
+            <!-- 画像添付時のプレビュー表示エリア -->
+            <div class="img-preview-wrap hidden" id="img-preview-wrap">
+                <img class="img-preview-thumb hidden" id="img-preview" alt="添付画像プレビュー" />
+                <span class="file-preview-name hidden" id="file-preview-name"></span>
+                <button type="button" class="img-preview-cancel" id="img-preview-cancel" aria-label="添付を取り消す">✕</button>
+            </div>
+            <div class="chat-input-row">
+              <!-- ファイル添付ボタン（クリックで非表示のfile-inputを起動） -->
+              <button type="button" class="attach-btn" id="attach-btn" 
+              aria-label="ファイルを添付">📎
+              </button>
+              <input type="file"
+              id="file-input" class="hidden" aria-hidden="true" />
+              <input type="text" id="chat-input" placeholder="メッセージを入力…" autocomplete="off" aria-label="メッセージ入力" />
+              <button type="submit" class="btn btn--primary btn--sm">送信</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- 通話オーバーレイ：音声／ビデオ通話中に画面全体に表示される呼び出し中・通話中UI -->
+      <div id="call-overlay" class="call-overlay hidden" role="dialog" aria-modal="true">
+        <div class="call-overlay__bg"></div>
+        <div class="call-overlay__body">
+      
+      <!-- 通話相手の情報 -->
+      <div class="call-info-header">
+      <div class="call-avatar" id="call-avatar"></div>
+      <div class="call-name" id="call-name"></div>
+      <div class="call-status" id="call-status">
+          接続中…</div>
+      <div class="call-timer" id="call-timer">00:00</div>
+      </div> 
+
+      <!-- ビデオ通話用 -->
+      <div class="call-video-stage">
+        <video
+        id="call-remote-video"
+        class="call-remote-video hidden"
+        autoplay
+        playsinline>
+        </video>
+        <video
+        id="call-local-video"
+        class="call-local-video hidden"
+        autoplay
+        playsinline
+        muted>
+        </video>
+      </div>
+
+      <!-- 音声通話用 -->
+      <audio
+      id="call-remote-audio"
+      autoplay
+      playsinline>
+      </audio>
+
+      <!-- 通話操作ボタン：ミュート・終了・スピーカー切り替え -->
+      <div class="call-btns">
+      <button class="call-action-btn call-action-btn--mute" id="btn-call-mute" title="ミュート" aria-label="ミュート切替">🎤</button>
+      <button class="call-action-btn call-action-btn--end" id="btn-call-end" title="通話終了" aria-label="通話終了">📵</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 着信モーダル：相手からの通話に応答／拒否する -->
+      <div id="incoming-call-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="incoming-call-title">
+        <div class="modal-card match-modal-card">
+          <div class="call-avatar" id="incoming-call-avatar"></div>
+          <h2 id="incoming-call-title"><span id="incoming-call-name"></span>さんから着信</h2>
+          <p id="incoming-call-type">📞 音声通話</p>
+          <button class="btn btn--primary btn--full" id="incoming-call-accept">応答する</button>
+          <button class="btn btn--ghost btn--full" id="incoming-call-decline" style="margin-top:6px">拒否する</button>
+        </div>
+      </div>
+
+      <!-- 通知一覧画面：マッチ成立やレビューなどの通知をリスト表示 -->
+      <section id="view-notifications" class="view hidden" aria-label="通知">
+        <div class="view-header">
+          <h1>通知 🔔</h1>
+        </div>
+        <!-- 通知リストの描画先（JSで動的に生成） -->
+        <div id="notif-list" role="list"></div>
+        <!-- 通知が0件のときの空状態表示 -->
+        <div class="empty-state hidden" id="notif-empty">
+          <span class="empty-icon">🔔</span>
+          <p>新しい通知はありません</p>
+        </div>
+      </section>
+
+      <!-- マイページ画面：自分のプロフィール、ポイント残高、設定、投稿スキル、レビューをまとめて表示 -->
+      <section id="view-profile" class="view hidden" aria-label="マイページ">
+        <div class="view-header">
+          <h1>じぶんの森 🌳</h1>
+          <p class="view-sub">あなたの学びの記録</p>
+        </div>
+        <div class="profile-layout">
+          <!-- プロフィールカード：アバター・名前・学校名・ポイント残高・評価 -->
+          <div class="profile-card">
+            <div class="profile-avatar-wrap">
+              <div class="profile-avatar" id="profile-avatar"></div>
+              <button type="button" class="avatar-edit-btn" id="avatar-edit-btn" aria-label="プロフィール写真を変更">📷</button>
+              <input type="file" id="avatar-file-input" accept="image/*" class="hidden" aria-hidden="true" />
+            </div>
+            <h2 id="profile-name"></h2>
+            <p class="profile-school" id="profile-school"></p>
+            <p class="verified-badge hidden" id="profile-verified-badge" style="color:#2E9E5B;font-size:.82rem;font-weight:700;margin:2px 0 0;">✓ 学生認証済み</p>
+            <p style="color:var(--text-soft,#888);font-size:.76rem;margin:6px 0 0;" id="profile-realname-row">
+              🔒 登録した本名：<span id="profile-realname"></span>（他のユーザーには表示されません）
+            </p>
+            <!-- 現在のTimeポイント残高表示 -->
+            <div class="profile-time-box">
+              <div class="profile-time-label">☀ Time（ポイント）現在の残高</div>
+              <div>
+                <span class="profile-time-val" id="pstat-points">0</span>
+                <span class="profile-time-unit"> Time</span>
+              </div>
+            </div>
+            <!-- 投稿スキル数・マッチ数の簡易統計 -->
+            <div class="profile-stats">
+              <div class="pstat">
+                <span class="pstat-num" id="pstat-skills">0</span>
+                <span class="pstat-label">投稿スキル</span>
+              </div>
+              <div class="pstat">
+                <span class="pstat-num" id="pstat-matches">0</span>
+                <span class="pstat-label">マッチ数</span>
+              </div>
+            </div>
+            <!-- 平均評価（星）の表示 -->
+            <div class="rating-display">
+              <span class="stars" id="profile-stars"></span>
+              <span id="profile-rating-val" style="font-size:.84rem;color:var(--text-soft)"></span>
+            </div>
+            <!-- 獲得バッジ表示：教え上手・レス早・親切などの称号アイコン -->
+            <div class="badge-grid">
+              <div class="badge-item">
+                <div class="badge-icon">👍</div>
+                <span class="badge-label">教え上手</span>
+              </div>
+              <div class="badge-item">
+                <div class="badge-icon">⚡</div>
+                <span class="badge-label">レス早</span>
+              </div>
+              <div class="badge-item">
+                <div class="badge-icon">💖</div>
+                <span class="badge-label">親切</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 設定メニュー：表示名変更・パスワード変更・通知設定・利用規約への導線（各モーダルを開くボタン） -->
+          <div class="profile-section">
+            <h3>設定 ⚙️</h3>
+            <div class="settings-list">
+              <button class="settings-item" id="btn-edit-name">
+                <span class="settings-item__icon">✏️</span>
+                <span class="settings-item__label">表示名を変更する</span>
+                <span class="settings-item__arrow">›</span>
+              </button>
+              <button type="button" id="change-password-btn" class="settings-item">
+                <span class="settings-item__icon">🔑</span>
+                <span class="settings-item__label">パスワードを変更する</span>
+                <span class="settings-item__arrow">›</span>
+              </button>
+              <button type="button" id="open-delete-account-btn" class="settings-item text-danger">
+                <span class="settings-item__icon">🗑️</span>
+                <span class="settings-item__label">アカウントを削除（退会）する</span>
+                <span class="settings-item__arrow">›</span>
+            </button>
+              <button class="settings-item" id="btn-notif-settings">
+                <span class="settings-item__icon">🔔</span>
+                <span class="settings-item__label">通知設定</span>
+                <span class="settings-item__arrow">›</span>
+              </button>
+              <button class="settings-item" id="btn-terms">
+                <span class="settings-item__icon">📄</span>
+                <span class="settings-item__label">利用規約・プライバシーポリシー</span>
+                <span class="settings-item__arrow">›</span>
+              </button>
+            </div>
+          </div>
+          <!-- 自分が投稿中のスキル一覧 -->
+          <div class="profile-section">
+            <h3>投稿中のスキル</h3>
+            <div id="my-skills-list"></div>
+          </div>
+          <!-- 現在進行中のスキル交換 -->
+          <div class="profile-section">
+              <h3>進行中のスキル交換</h3>
+              <div id="active-skills-list"></div>
+              </div>
+          <!-- 他ユーザーから受け取ったレビュー一覧 -->
+          <div class="profile-section">
+            <h3>受け取ったレビュー</h3>
+            <div id="reviews-list"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 下部ナビゲーションバー：ホーム／メッセージ／投稿／通知／マイページの画面切り替え -->
+    <div class="bottom-nav-wrap">
+      <nav class="bottom-nav" aria-label="メインナビゲーション">
+        <!-- ホーム画面（スキル一覧）への切り替えボタン -->
+        <button class="nav-btn active" data-view="home" aria-label="ホーム">
+          <div class="nav-icon-wrap"><span class="nav-icon">🏠</span></div>
+          <span class="nav-label">ホーム</span>
+        </button>
+        <!-- メッセージ画面への切り替えボタン（未読があればバッジ表示） -->
+        <button class="nav-btn" data-view="messages" aria-label="メッセージ">
+          <div class="nav-icon-wrap" style="position:relative">
+            <span class="nav-icon">💬</span>
+            <span class="badge hidden" id="dm-badge"></span>
+          </div>
+          <span class="nav-label">メッセージ</span>
+        </button>
+        <!-- 中央のFAB（投稿ボタン）：スキル投稿画面を直接開く -->
+        <div class="nav-fab-wrap">
+          <button class="nav-fab" id="nav-post-btn" aria-label="スキルを投稿">＋</button>
+        </div>
+        <!-- 通知画面への切り替えボタン（未読があればバッジ表示） -->
+        <button class="nav-btn" data-view="notifications" aria-label="通知">
+          <div class="nav-icon-wrap" style="position:relative">
+            <span class="nav-icon">🔔</span>
+            <span class="badge hidden" id="notif-badge"></span>
+          </div>
+          <span class="nav-label">通知</span>
+        </button>
+        <!-- マイページ画面への切り替えボタン -->
+        <button class="nav-btn" data-view="profile" aria-label="マイページ">
+          <div class="nav-icon-wrap"><span class="nav-icon">🌳</span></div>
+          <span class="nav-label">マイページ</span>
+        </button>
+      </nav>
+    </div>
+
+  </div>
+
+  <!-- スキル詳細モーダル：一覧からスキルカードをクリックした際に詳細・投稿者情報・レビューを表示するポップアップ -->
+  <div id="skill-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close-btn" aria-label="閉じる">✕</button>
+      <!-- タイトル・カテゴリ・レベル・係数・ポイントなどのメタ情報 -->
+      <div class="modal-header-section">
+        <span class="modal-category-badge" id="modal-category"></span>
+        <h2 id="modal-title"></h2>
+        <div class="modal-meta-row">
+          <span class="level-badge" id="modal-level"></span>
+          <span class="coeff-tag" id="modal-coeff"></span>
+          <span class="points-tag" id="modal-points"></span>
+        </div>
+      </div>
+      <!-- 投稿者情報：アバター・名前・学校・評価 -->
+      <div class="modal-poster">
+        <div class="avatar" id="modal-avatar"></div>
+        <div class="modal-poster-info">
+          <div class="modal-poster-name" id="modal-poster-name"></div>
+          <div class="modal-poster-school" id="modal-poster-school"></div>
+          <div id="modal-poster-rating"></div>
+        </div>
+      </div>
+      <!-- スキルの詳細説明文 -->
+      <p class="modal-desc" id="modal-desc"></p>
+      <!-- 交換希望スキルの表示（投稿者が指定している場合のみ表示） -->
+      <div class="modal-exchange hidden" id="modal-exchange-wrap">
+        <span class="exchange-label">💱 求めるスキル:</span>
+        <span id="modal-exchange"></span>
+      </div>
+      <!-- 提供時間の表示 -->
+      <div class="modal-time-row">
+        <span>⏱</span><span>提供時間: <strong id="modal-time"></strong></span>
+      </div>
+      <!-- レビューセクション：既存レビュー一覧＋新規レビュー投稿フォーム（星評価＋コメント） -->
+      <div class="modal-reviews-section" id="modal-reviews">
+        <h3>みんなのレビュー ⭐</h3>
+        <div id="modal-review-list"></div>
+        <form class="review-form" id="review-form" novalidate>
+          <h4>レビューを書く</h4>
+          <div class="star-selector" id="star-selector" role="group" aria-label="評価を選択">
+            <button type="button" class="star-btn" data-star="1" aria-label="星1">★</button>
+            <button type="button" class="star-btn" data-star="2" aria-label="星2">★</button>
+            <button type="button" class="star-btn" data-star="3" aria-label="星3">★</button>
+            <button type="button" class="star-btn" data-star="4" aria-label="星4">★</button>
+            <button type="button" class="star-btn" data-star="5" aria-label="星5">★</button>
+          </div>
+          <textarea id="review-text" rows="3" placeholder="このスキルについてレビューを書いてください"></textarea>
+          <button type="submit" class="btn btn--mint btn--sm">レビューを投稿</button>
+          <p class="form-error" id="review-error" role="alert" aria-live="polite"></p>
+        </form>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn--primary" id="modal-match-btn">助ける！🤝</button>
+        <button class="btn btn--outline" id="modal-dm-btn">DMを送る 💬</button>
+        <button class="btn btn--outline" id="modal-report-btn">🚩 通報</button>
+        <button class="btn btn--outline" id="modal-block-btn">🚫 ブロック</button>
+      </div>
+    </div>
+  </div>
+<div id="report-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+    <div class="modal-card settings-modal-card">
+      <button class="modal-close" id="report-modal-close" aria-label="閉じる">✕</button>
+      <h2 id="report-modal-title">投稿を通報する</h2>
+      <form id="report-form" novalidate>
+        <label for="report-reason">理由を選択してください</label>
+        <select id="report-reason">
+          <option value="spam">スパム・宣伝</option>
+          <option value="inappropriate">不適切な内容</option>
+          <option value="fraud">詐欺・トラブルの疑い</option>
+          <option value="other">その他</option>
+        </select>
+        <textarea id="report-detail" rows="3" placeholder="詳細（任意）"></textarea>
+        <button type="submit" class="btn btn--primary btn--sm">通報を送信</button>
+        <p class="form-error" id="report-error" role="alert" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- MATCH MODAL -->
+  <div id="match-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="match-modal-title">
+    <div class="modal-card match-modal-card">
+      <div class="match-celebration">🎉</div>
+      <h2 id="match-modal-title">マッチ成立！</h2>
+      <p id="match-modal-body"></p>
+      <div class="match-exchange-display" id="match-exchange-display"></div>
+      <button class="btn btn--primary btn--full" id="match-go-dm">DMで話しかける 💬</button>
+      <button class="btn btn--ghost btn--full" id="match-close" style="margin-top:6px">後で</button>
+    </div>
+  </div>
+
+  <!-- EDIT NAME MODAL -->
+  <div id="edit-name-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="edit-name-title">
+    <div class="modal-card settings-modal-card">
+      <button class="modal-close" id="edit-name-close" aria-label="閉じる">✕</button>
+      <h2 id="edit-name-title">✏️ 表示名を変更する</h2>
+      <p class="settings-modal-desc">ニックネームを変更します。本名は不要です。</p>
+      <form id="edit-name-form" novalidate>
+        <div class="form-group">
+          <label for="edit-name-input">ニックネーム <span class="required">*</span></label>
+          <input type="text" id="edit-name-input" placeholder="例: さくら、K.Sato" maxlength="20" autocomplete="off" />
+          <span class="form-hint">20文字以内</span>
+        </div>
+        <div class="settings-modal-actions">
+          <button type="submit" class="btn btn--primary btn--full">保存する</button>
+          <button type="button" class="btn btn--ghost btn--full" id="edit-name-cancel">キャンセル</button>
+        </div>
+        <p class="form-error" id="edit-name-error" role="alert" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+    <!-- パスワードを変更する -->
+  <div id="change-password-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="change-password-title">
+    <div class="modal-card settings-modal-card">
+      <button class="modal-close" id="change-password-close" aria-label="閉じる">✕</button>
+      <h2 id="change-password-title">🔑 パスワードを変更する</h2>
+      <p class="settings-modal-desc">パスワードを変更します。</p>
+      <form id="change-password-form" novalidate>
+        <div class="form-group">
+          <label for="change-password-input">新しいパスワード
+              <span class="required">*</span></label>
+          <input type="password" id="change-password-input" maxlength="20" autocomplete="off" />
+          <span class="form-hint">8文字以上</span>
+          <label for="change-password-confirm">新しいパスワードを再確認
+              <span class="required">*</span></label>
+          <input type="password" id="change-password-confirm" maxlength="20" autocomplete="new-password"/>
+          <span class="form-hint">確認用のパスワードを入力してください</span>
+          <p id="change-password-error" class="form-error"></p>
+        </div>
+        <div class="settings-modal-actions">
+          <button type="submit" class="btn btn--primary btn--full">保存する</button>
+          <button type="button" class="btn btn--ghost btn--full" id="change-password-cancel">キャンセル</button>
+        </div>
+        <p class="form-error" role="alert" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- 🗑️ アカウント削除（退会）モーダル -->
+<div id="delete-account-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="delete-account-title">
+  <div class="modal-card settings-modal-card">
+    <button type="button" class="modal-close" id="delete-account-close" aria-label="閉じる">✕</button>
+    <h2 id="delete-account-title" style="color: #e53e3e;">🗑️ 退会の確認</h2>
+    
+    <div class="delete-warning-box" style="background: #fff5f5; border: 1px solid #feb2b2; padding: 12px; border-radius: 8px; margin: 15px 0;">
+      <p style="color: #c53030; font-weight: bold; font-size: 14px; margin-bottom: 5px;">⚠️ ご注意ください</p>
+      <p style="font-size: 13px; color: #4a5568; line-height: 1.5;">
+        アカウントを削除すると、これまでのプロフィール、メッセージ、獲得したポイント・履歴はすべて消去され、復元できなくなります。
+      </p>
+    </div>
+
+    <form id="delete-account-form" novalidate>
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+          <input type="checkbox" id="delete-confirm-check" required />
+          注意事項に同意して退会します
+        </label>
+      </div>
+
+      <div class="settings-modal-actions">
+        <button type="submit" class="btn btn--danger btn--full" id="delete-account-submit" disabled style="background-color: #e53e3e; color: white; opacity: 0.5;">退会する</button>
+        <button type="button" class="btn btn--ghost btn--full" id="delete-account-cancel">キャンセル</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- パスワードを忘れた -->
+        <div id="forgot-password-modal" class="modal-overlay hidden">       
+            <div class="modal-card settings-modal-card">
+                <button type="button" class="modal-close" id="forgot-password-close">×</button>
+                <h2>🔑 パスワードを再設定する</h2>
+                <p class="settings-modal-desc">
+                  登録した本名（確認用）とメールアドレスを入力してください。再設定メールを送信します。</p>
+                <form id="forgot-password-form">
+                <div class="form-group">
+                  <label for="forgot-realname">本名（確認用・任意）</label>
+                  <input type="text" id="forgot-realname" placeholder="本名を入力"/>
+                </div>
+                <div class="form-group">
+                    <label for="forgot-email">メールアドレス</label>
+                    <input type="email" id="forgot-email" placeholder="登録したメールアドレス"/>
+                    </div>
+                <p id="forgot-password-error" class="form-error"></p>
+                <button type="submit" class="btn btn--primary btn--full">再設定メールを送信する
+                </button>
+                </form>
+            </div>
+        </div>
+
+
+  <!-- NOTIFICATION SETTINGS MODAL -->
+  <div id="notif-settings-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="notif-settings-title">
+    <div class="modal-card settings-modal-card">
+      <button class="modal-close" id="notif-settings-close" aria-label="閉じる">✕</button>
+      <h2 id="notif-settings-title">🔔 通知設定</h2>
+      <p class="settings-modal-desc">受け取る通知の種類を設定できます。</p>
+      <div class="toggle-list">
+        <div class="toggle-item">
+          <div class="toggle-item__info">
+            <span class="toggle-item__icon">🎉</span>
+            <div>
+              <div class="toggle-item__label">マッチ成立通知</div>
+              <div class="toggle-item__sub">スキル交換が成立したときに通知</div>
+            </div>
+          </div>
+          <label class="toggle-switch" aria-label="マッチ成立通知">
+            <input type="checkbox" id="notif-match" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-item__info">
+            <span class="toggle-item__icon">⭐</span>
+            <div>
+              <div class="toggle-item__label">レビュー通知</div>
+              <div class="toggle-item__sub">新しいレビューが届いたときに通知</div>
+            </div>
+          </div>
+          <label class="toggle-switch" aria-label="レビュー通知">
+            <input type="checkbox" id="notif-review" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-item__info">
+            <span class="toggle-item__icon">💬</span>
+            <div>
+              <div class="toggle-item__label">DM通知</div>
+              <div class="toggle-item__sub">新しいメッセージが届いたときに通知</div>
+            </div>
+          </div>
+          <label class="toggle-switch" aria-label="DM通知">
+            <input type="checkbox" id="notif-dm" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-item__info">
+            <span class="toggle-item__icon">📢</span>
+            <div>
+              <div class="toggle-item__label">サービスからのお知らせ</div>
+              <div class="toggle-item__sub">運営からのお知らせや新機能の通知</div>
+            </div>
+          </div>
+          <label class="toggle-switch" aria-label="サービスお知らせ">
+            <input type="checkbox" id="notif-system" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <button class="btn btn--primary btn--full" id="notif-settings-save" style="margin-top:20px">保存する</button>
+    </div>
+  </div>
+
+  <!-- TERMS MODAL 個人情報・利用規約 --> 
+  <div id="terms-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+    <div class="modal-card terms-modal-card">
+      <button class="modal-close" id="terms-close" aria-label="閉じる">✕</button>
+      <h2 id="terms-title">📄 利用規約・プライバシーポリシー</h2>
+      <div class="terms-tabs" role="tablist">
+        <button class="terms-tab active" data-terms="tos" role="tab">利用規約</button>
+        <button class="terms-tab" data-terms="privacy" role="tab">プライバシーポリシー</button>
+      </div>
+
+      <!-- 利用規約の内容 --> 
+      <div id="terms-tos" class="terms-body">
+        <h3>第1条（目的）</h3>
+        <p>本規約は、Skill-Swap（以下「本サービス」）の利用に関する条件を定めるものです。利用者は本規約に同意の上、本サービスを利用するものとします。</p>
+        <h3>第2条（利用資格）</h3>
+        <p>本サービスは、現在在籍中の大学・専門学校等の18歳以上の学生のみが利用できます。利用登録には学校が発行するメールアドレス（ac.jp・edu 等のドメイン）が必要です。</p>
+        <h3>第3条（禁止事項）</h3>
+        <ul>
+          <li>金銭のやり取りを伴う取引</li>
+          <li>他ユーザーへの誹謗中傷・嫌がらせ</li>
+          <li>個人情報（住所・電話番号・金融情報等）の要求・共有</li>
+          <li>虚偽のスキル情報の登録</li>
+          <li>本サービスの不正利用・妨害行為</li>
+          <li>商業目的での勧誘・宣伝行為</li>
+        </ul>
+        <h3>第4条（スキルポイント）</h3>
+        <p>スキルポイント（Time）は本サービス内専用の仮想ポイントです。現金・ギフト券等への換金はできません。退会時にポイントは消滅します。</p>
+        <h3>第5条（免責事項）</h3>
+        <p>本サービスはユーザー同士のスキル交換を仲介するプラットフォームです。交換の内容・品質・結果についていかなる保証もしません。トラブルはユーザー間で解決するものとします。</p>
+        <h3>第6条（規約の変更）</h3>
+        <p>運営は必要に応じて本規約を変更できます。変更後も継続利用した場合は変更に同意したものとみなします。</p>
+      </div>
+
+      <!-- プライバシーポリシーの内容 --> 
+      <div id="terms-privacy" class="terms-body hidden">
+        <h3>収集する情報</h3>
+        <p>本サービスは、利用登録時にニックネーム・学校メールアドレス・学校名を収集します。スキル投稿・DM・レビューの内容もサービス提供のために保存されます。</p>
+        <h3>情報の利用目的</h3>
+        <ul>
+          <li>学生認証・アカウント管理のため</li>
+          <li>スキルマッチング機能の提供のため</li>
+          <li>サービス改善・不正利用防止のため</li>
+        </ul>
+        <h3>第三者への提供</h3>
+        <p>収集した個人情報は、法令に基づく開示を除き、第三者に提供・販売することはありません。</p>
+        <h3>情報の管理</h3>
+        <p>個人情報は適切なセキュリティ対策を講じて管理します。パスワードはハッシュ化して保存されます。</p>
+        <h3>DM内の情報について</h3>
+        <p>DM内に送信された住所・電話番号等の個人情報は本サービスの管理外となります。DM内での個人情報の共有はご遠慮ください。不審なやり取りは運営へご報告ください。</p>
+        <h3>お問い合わせ</h3>
+        <p>個人情報の取り扱いに関するお問い合わせは、運営サポート窓口までご連絡ください。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK（compat版：既存のグローバルスクリプトと相性が良い） -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/chat-firebase.js"></script>
+  <script src="js/call-webrtc.js"></script>
+  <script src="js/profile-firebase.js"></script>
+  <script src="js/skills-firebase.js"></script>
+  <script src="js/auth-firebase.js"></script>
+  <script src="js/main.js"></script>
+  
+  <!-- ローディング画面 -->
+<div id="loading-overlay" class="modal-overlay hidden" style="z-index: 9999; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; color: white; font-weight: bold;">
+  <div style="text-align: center;">
+    <div class="spinner" style="width: 40px; height: 40px; border: 4px solid #fff; border-top: 4px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
+    <p>処理中...</p>
+  </div>
+</div>
+
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+</body>
+
+</html>
