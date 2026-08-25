@@ -162,6 +162,18 @@ document.addEventListener("DOMContentLoaded", () => {
       isHidden ? "🙈" : "👀";
   });
 
+  // 新規登録用
+    const regPasswordInput = document.getElementById("reg-password");
+    const toggleRegBtn = document.getElementById("toggle-reg-pass");
+
+    if (regPasswordInput && toggleRegBtn) {
+      toggleRegBtn.addEventListener("click", () => {
+        const isHidden = regPasswordInput.type === "password";
+        regPasswordInput.type = isHidden ? "text" : "password";
+        toggleRegBtn.textContent = isHidden ? "🙈" : "👀";
+      });
+    }
+
 });
 
 // ===== 固定配置 =====

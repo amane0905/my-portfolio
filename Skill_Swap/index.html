@@ -51,7 +51,7 @@
       <!-- ログイン用フォーム -->
       <form id="login-form" class="auth-form" novalidate>
         <!-- ▼ 採用担当者向けの案内（ここから） ▼ -->
-        <div style="background-color: #f0f8ff; border: 1px solid #cce5ff; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; color: #333;">
+        <div style="background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 0.85rem; line-height: 1.5;">
           <strong>🔑 採用担当者様へ（お試し用ログイン情報）</strong><br>
             メールアドレス：<code>test@university.ac.jp</code><br>
             パスワード：<code>test1234</code>
@@ -116,7 +116,10 @@
         <!-- パスワード設定項目（登録用） -->
         <div class="form-group">
           <label for="reg-password">パスワード <span class="required">*</span></label>
+          <div class="password-wrap" style="position: relative;">
           <input type="password" id="reg-password" placeholder="8文字以上" autocomplete="new-password" />
+          <button type="button" id="toggle-reg-pass" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">👀</button>
+          </div>
         </div>
         <!-- 利用規約の同意チェックボックス -->
         <div class="form-group">
