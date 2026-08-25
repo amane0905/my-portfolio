@@ -19,9 +19,13 @@ async function registerAndSendVerification(email, password) {
 async function signInAndCheckEmailVerified(email, password) {
   const cred = await fireAuth.signInWithEmailAndPassword(email, password);
   await cred.user.reload();
+  
+  // テストアカウントなら無条件で verified を true にする
+  const isVerified = cred.user.emailVerified || cred.user.email === 'test@university.ac.jp';
+  
   return {
     user: cred.user,
-    verified: !!cred.user.emailVerified
+    verified: isVerified
   };
 }
 
@@ -35,6 +39,7 @@ async function resendVerificationEmail() {
 async function refreshEmailVerified() {
   if (!fireAuth.currentUser) return false;
   await fireAuth.currentUser.reload();
+  
   return fireAuth.currentUser.emailVerified;
 }
 
