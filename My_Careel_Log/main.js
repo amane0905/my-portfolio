@@ -100,11 +100,12 @@ window.fireAuth.onAuthStateChanged(function(user){
   if(user){
     loadFromCloud();
   } else if(previousUser){
-    clearLocalData();
-  }
+  wipeAllData();
+  toast('ログアウトしました');
+}
 });
 
-function clearLocalData(){
+function wipeAllData(){
   STATE.companies = [];
   STATE.experiences = [];
   STATE.values = [];
@@ -114,7 +115,6 @@ function clearLocalData(){
   persistAll();
   showView('home');
   renderHome();
-  toast('ログアウトしました');
 }
 
 document.getElementById('btnLogin').addEventListener('click', function(){
