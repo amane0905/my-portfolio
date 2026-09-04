@@ -20,7 +20,7 @@ function save(key, data){
 var STATE = {
   companies: load(KEYS.companies, []),
   experiences: load(KEYS.experiences, []),
-  values: load(KEYS.values, []),          // [{tag, sources:[{type,id,name,note}]}]
+  values: load(KEYS.values, []),
   sevenDays: load(KEYS.sevenDays, null),
   columns: load(KEYS.columns, {value:[],strength:[],weakness:[],challenge:[]}),
   wordcloud: load(KEYS.wordcloud, [])
@@ -35,6 +35,7 @@ function persistAll(){
   syncToCloud();
 }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
 /* =========================================================
    AUTH & CLOUD SYNC (Firebase)
    ========================================================= */
@@ -44,7 +45,6 @@ function cloudDocRef(){
   if(!currentUser) return null;
   return window.fireDb.collection('careerLogUsers').doc(currentUser.uid);
 }
-
 function syncToCloud(){
   var ref = cloudDocRef();
   if(!ref) return;
@@ -58,7 +58,6 @@ function syncToCloud(){
     updatedAt: new Date().toISOString()
   }).catch(function(err){ console.error('クラウド保存に失敗:', err); });
 }
-
 function loadFromCloud(){
   var ref = cloudDocRef();
   if(!ref) return;
@@ -80,12 +79,11 @@ function loadFromCloud(){
     }
   }).catch(function(err){ console.error('クラウド読み込みに失敗:', err); });
 }
-
 function updateAuthUI(){
   var authStatus = document.getElementById('authStatus');
   var gsiContainer = document.getElementById('gsiButtonContainer');
   var authUserName = document.getElementById('authUserName');
-  if(currentUser && !currentUser.isAnonymous){
+  if(currentUser){
     gsiContainer.style.display = 'none';
     authStatus.style.display = '';
     authUserName.textContent = currentUser.displayName || currentUser.email || 'ログイン中';
@@ -94,19 +92,17 @@ function updateAuthUI(){
     authStatus.style.display = 'none';
   }
 }
-
 window.fireAuth.onAuthStateChanged(function(user){
   var previousUser = currentUser;
   currentUser = user;
   updateAuthUI();
-  if(user && !user.isAnonymous){
+  if(user){
     loadFromCloud();
-  } else if(!user && previousUser && !previousUser.isAnonymous){
+  } else if(!user && previousUser){
     wipeAllData();
     toast('ログアウトしました');
   }
 });
-
 function wipeAllData(){
   STATE.companies = [];
   STATE.experiences = [];
@@ -127,7 +123,6 @@ function handleGsiCredential(response){
     toast('ログインに失敗しました');
   });
 }
-
 if(window.google && google.accounts && google.accounts.id){
   google.accounts.id.initialize({
     client_id: GOOGLE_WEB_CLIENT_ID,
@@ -138,7 +133,6 @@ if(window.google && google.accounts && google.accounts.id){
     { theme: 'outline', size: 'medium', text: 'signin_with', shape: 'pill' }
   );
 }
-
 document.getElementById('btnLogout').addEventListener('click', function(){
   window.fireAuth.signOut();
   if(window.google && google.accounts && google.accounts.id){
@@ -222,7 +216,6 @@ window.addEventListener('resize', function(){ if(document.getElementById('view-h
    VALUE TAGS (shared logic)
    ========================================================= */
 var CANDIDATE_TAGS = ['#成長','#挑戦','#人との関係','#安定','#裁量','#社会貢献','#技術','#自分らしさ','#働き方','#待遇','#企業文化'];
-
 function normalizeTag(t){
   t = (t||'').trim();
   if(!t) return '';
@@ -264,9 +257,7 @@ var DEEPDIVE_PROMPTS = [
   'その条件はあなたにとってなぜ重要？',
   'これまで似たことを大切にした経験はある？'
 ];
-
 var currentCompanyId = null;
-
 function blankCompany(){
   return {
     id: uid(), name:'', industry:'', date:'', type:'インターン', url:'', overview:'',
@@ -311,7 +302,6 @@ function renderCompanyList(){
 function escapeHtml(s){
   return (s||'').replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
 }
-
 function openCompanyForm(id){
   var c;
   if(id){ c = STATE.companies.find(function(x){ return x.id===id; }); }
@@ -341,13 +331,11 @@ function openCompanyForm(id){
 }
 document.getElementById('btnNewCompany').addEventListener('click', function(){ openCompanyForm(null); });
 document.getElementById('btnBackToList').addEventListener('click', function(){ showView('companies'); });
-
 document.getElementById('cFeelChips').addEventListener('click', function(e){
   var chip = e.target.closest('.chip'); if(!chip) return;
   var on = chip.getAttribute('aria-pressed')==='true';
   chip.setAttribute('aria-pressed', on ? 'false':'true');
 });
-
 function buildAxisBlocks(c){
   var wrap = document.getElementById('axisBlocks');
   wrap.innerHTML='';
@@ -391,7 +379,6 @@ function updateAvgDisplay(c){
   var avg = companyAvg(c);
   document.getElementById('cAvgDisplay').textContent = avg ? starString(avg)+' '+avg.toFixed(1) : '未評価';
 }
-
 function buildCandidateTags(containerId, selected){
   var wrap = document.getElementById(containerId);
   wrap.innerHTML='';
@@ -439,7 +426,6 @@ document.getElementById('btnAddCustomTag').addEventListener('click', function(){
   if(c && c.tags.indexOf(t)===-1){ c.tags.push(t); renderSelectedTags('cSelectedTags', c); }
   input.value='';
 });
-
 document.getElementById('btnSaveCompany').addEventListener('click', function(){
   var c = STATE.companies.find(function(x){ return x.id===currentCompanyId; });
   if(!c) return;
@@ -668,7 +654,6 @@ document.getElementById('btnDeleteSeven').addEventListener('click', function(){
   renderRecap();
   toast('削除しました');
 });
-
 var COL_MAP = {value:'colValue', strength:'colStrength', weakness:'colWeakness', challenge:'colChallenge'};
 function renderColumns(){
   Object.keys(COL_MAP).forEach(function(key){
@@ -705,7 +690,6 @@ document.getElementById('nextChallengeChips').addEventListener('click', function
   if(!STATE.columns.challenge) STATE.columns.challenge=[];
   if(STATE.columns.challenge.indexOf(val)===-1){ STATE.columns.challenge.push(val); persistAll(); renderColumns(); toast('CHALLENGEに追加しました'); }
 });
-
 function renderRecap(){
   var s = STATE.sevenDays;
   var body = document.getElementById('recapBody');
@@ -741,20 +725,20 @@ document.getElementById('btnPrintRecap').addEventListener('click', function(){
 /* =========================================================
    WORD CLOUD
    ========================================================= */
-/* Firestoreの共有コレクション（wordcloudAnswers）を使って、
-   全端末・全ユーザーでリアルタイムに共有します。 */
+/* 閲覧はログイン不要（誰でも見られる）、投稿・削除はGoogleログインが必要。
+   Firestoreの wordcloudAnswers コレクションを使って全端末で共有する。 */
 var wcSeenIds = {};
-function wcEnsureAuth(){
-  if(window.fireAuth.currentUser) return Promise.resolve(window.fireAuth.currentUser);
-  return window.fireAuth.signInAnonymously().then(function(cred){ return cred.user; });
-}
+var wcWordElements = {};
+
 function wcBroadcastSend(word){
-  wcEnsureAuth().then(function(user){
-    return window.fireDb.collection('wordcloudAnswers').add({
-      word: word,
-      uid: user.uid,
-      ts: firebase.firestore.FieldValue.serverTimestamp()
-    });
+  if(!currentUser){
+    toast('投稿にはログインが必要です');
+    return;
+  }
+  window.fireDb.collection('wordcloudAnswers').add({
+    word: word,
+    uid: currentUser.uid,
+    ts: firebase.firestore.FieldValue.serverTimestamp()
   }).catch(function(err){ console.error('送信に失敗:', err); toast('送信に失敗しました'); });
 }
 function wcBroadcastOnReceive(cb){
@@ -771,7 +755,6 @@ function wcBroadcastOnReceive(cb){
       });
     }, function(err){ console.error('受信に失敗:', err); });
 }
-
 function wcAddWord(word, fromRemote, docId, uid){
   word = word.trim();
   if(!word) return;
@@ -779,41 +762,58 @@ function wcAddWord(word, fromRemote, docId, uid){
   save(KEYS.wordcloud, STATE.wordcloud);
   spawnWord(word, docId, uid);
 }
-
-function spawnWord(word, docId, uid){
-  var stage = document.getElementById('wcStage');
-  var norm = word.trim().toLowerCase();
-  var count = STATE.wordcloud.filter(function(w){ return w.word.trim().toLowerCase()===norm; }).length;
-  var size = Math.min(2.2, 0.95 + count*0.22);
-  var el = document.createElement('div');
-  el.className='wc-word';
-  el.textContent = word;
-  el.style.fontSize = size+'rem';
-  var maxX = Math.max(stage.clientWidth - 140, 20);
-  var maxY = Math.max(stage.clientHeight - 60, 20);
-  el.style.left = (10+Math.random()*maxX)+'px';
-  el.style.top = (10+Math.random()*maxY)+'px';
-  el.style.animation = 'popIn 0.5s ease, popfloat '+(5+Math.random()*3)+'s ease-in-out '+0.5+'s infinite';
-  if(docId && window.fireAuth.currentUser && uid === window.fireAuth.currentUser.uid){
+function updateWordDeleteButton(entry, norm){
+  var existingX = entry.el.querySelector('.wc-word-delete');
+  if(existingX) existingX.remove();
+  var myUid = currentUser ? currentUser.uid : null;
+  var mine = myUid ? entry.ids.filter(function(i){ return i.uid === myUid; }) : [];
+  if(mine.length){
     var x = document.createElement('span');
     x.className = 'wc-word-delete';
     x.textContent = '×';
     x.addEventListener('click', function(ev){
       ev.stopPropagation();
-      if(!confirm('この投稿を削除しますか？')) return;
-      window.fireDb.collection('wordcloudAnswers').doc(docId).delete().then(function(){
-        el.remove();
+      if(!confirm('自分が送った分だけ削除しますか？')) return;
+      Promise.all(mine.map(function(i){
+        return window.fireDb.collection('wordcloudAnswers').doc(i.docId).delete();
+      })).then(function(){
+        entry.ids = entry.ids.filter(function(i){ return i.uid !== myUid; });
+        entry.count -= mine.length;
+        if(entry.count <= 0){
+          entry.el.remove();
+          delete wcWordElements[norm];
+        } else {
+          entry.el.style.fontSize = Math.min(2.6, 0.95 + entry.count*0.22)+'rem';
+          updateWordDeleteButton(entry, norm);
+        }
       }).catch(function(err){ console.error('削除に失敗:', err); toast('削除に失敗しました'); });
     });
-    el.appendChild(x);
+    entry.el.appendChild(x);
   }
-  stage.appendChild(el);
 }
-
-function replayWordcloud(){
+function spawnWord(word, docId, uid){
   var stage = document.getElementById('wcStage');
-  Array.prototype.slice.call(stage.querySelectorAll('.wc-word')).forEach(function(el){ el.remove(); });
-  STATE.wordcloud.forEach(function(w){ spawnWord(w.word); });
+  var norm = word.trim().toLowerCase();
+  var entry = wcWordElements[norm];
+  if(entry){
+    entry.count++;
+    if(uid) entry.ids.push({docId:docId, uid:uid});
+    entry.el.style.fontSize = Math.min(2.6, 0.95 + entry.count*0.22)+'rem';
+    updateWordDeleteButton(entry, norm);
+    return;
+  }
+  var el = document.createElement('div');
+  el.className='wc-word';
+  el.textContent = word;
+  el.style.fontSize = '0.95rem';
+  var maxX = Math.max(stage.clientWidth - 140, 20);
+  var maxY = Math.max(stage.clientHeight - 60, 20);
+  el.style.left = (10+Math.random()*maxX)+'px';
+  el.style.top = (10+Math.random()*maxY)+'px';
+  el.style.animation = 'popIn 0.5s ease, popfloat '+(5+Math.random()*3)+'s ease-in-out 0.5s infinite';
+  stage.appendChild(el);
+  wcWordElements[norm] = {el:el, ids: uid ? [{docId:docId, uid:uid}] : [], count:1};
+  updateWordDeleteButton(wcWordElements[norm], norm);
 }
 document.getElementById('wcSubmit').addEventListener('click', function(){
   var input = document.getElementById('wcInput');
@@ -826,7 +826,6 @@ document.getElementById('wcInput').addEventListener('keydown', function(e){
   if(e.key==='Enter'){ document.getElementById('wcSubmit').click(); }
 });
 wcBroadcastOnReceive(function(word, docId, uid){ wcAddWord(word, true, docId, uid); });
-
 document.getElementById('btnRevealWc').addEventListener('click', function(){
   var stage = document.getElementById('wcStage');
   var layer = document.getElementById('wcRevealLayer');
@@ -837,9 +836,10 @@ document.getElementById('btnRevealWc').addEventListener('click', function(){
   steps.forEach(function(st, i){ setTimeout(function(){ st.classList.add('show'); }, i*700); });
 });
 document.getElementById('btnResetWc').addEventListener('click', function(){
-  if(!confirm('この端末に保存されているやりがいの回答をすべて消しますか？')) return;
+  if(!confirm('この画面に表示されている単語を、あなたの画面からだけ消しますか？')) return;
   STATE.wordcloud = [];
   save(KEYS.wordcloud, []);
+  wcWordElements = {};
   var stage = document.getElementById('wcStage');
   Array.prototype.slice.call(stage.querySelectorAll('.wc-word')).forEach(function(el){ el.remove(); });
   stage.classList.remove('dim');
@@ -892,7 +892,6 @@ document.getElementById('fileImport').addEventListener('change', function(e){
   reader.readAsText(file);
   e.target.value='';
 });
-
 document.getElementById('btnResetAll').addEventListener('click', function(){
   if(!confirm('すべてのデータを削除します。この操作は元に戻せません。よろしいですか？')) return;
   wipeAllData();
