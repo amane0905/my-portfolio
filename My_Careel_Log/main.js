@@ -30,8 +30,86 @@ function persistAll(){
   save(KEYS.sevenDays, STATE.sevenDays);
   save(KEYS.columns, STATE.columns);
   save(KEYS.wordcloud, STATE.wordcloud);
+  syncToCloud();
 }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+/* =========================================================
+   AUTH & CLOUD SYNC (Firebase)
+   ========================================================= */
+var currentUser = null;
+
+function cloudDocRef(){
+  if(!currentUser) return null;
+  return window.fireDb.collection('careerLogUsers').doc(currentUser.uid);
+}
+
+function syncToCloud(){
+  var ref = cloudDocRef();
+  if(!ref) return;
+  ref.set({
+    companies: STATE.companies,
+    experiences: STATE.experiences,
+    values: STATE.values,
+    sevenDays: STATE.sevenDays,
+    columns: STATE.columns,
+    wordcloud: STATE.wordcloud,
+    updatedAt: new Date().toISOString()
+  }).catch(function(err){ console.error('クラウド保存に失敗:', err); });
+}
+
+function loadFromCloud(){
+  var ref = cloudDocRef();
+  if(!ref) return;
+  ref.get().then(function(doc){
+    if(doc.exists){
+      var data = doc.data();
+      STATE.companies = data.companies || [];
+      STATE.experiences = data.experiences || [];
+      STATE.values = data.values || [];
+      STATE.sevenDays = data.sevenDays || null;
+      STATE.columns = data.columns || {value:[],strength:[],weakness:[],challenge:[]};
+      STATE.wordcloud = data.wordcloud || [];
+      persistAll();
+      renderHome();
+      toast('クラウドのデータを読み込みました');
+    } else {
+      syncToCloud();
+      toast('このアカウントの初回保存をしました');
+    }
+  }).catch(function(err){ console.error('クラウド読み込みに失敗:', err); });
+}
+
+function updateAuthUI(){
+  var authStatus = document.getElementById('authStatus');
+  var btnLogin = document.getElementById('btnLogin');
+  var authUserName = document.getElementById('authUserName');
+  if(currentUser){
+    btnLogin.style.display = 'none';
+    authStatus.style.display = '';
+    authUserName.textContent = currentUser.displayName || currentUser.email || 'ログイン中';
+  } else {
+    btnLogin.style.display = '';
+    authStatus.style.display = 'none';
+  }
+}
+
+window.fireAuth.onAuthStateChanged(function(user){
+  currentUser = user;
+  updateAuthUI();
+  if(user) loadFromCloud();
+});
+
+document.getElementById('btnLogin').addEventListener('click', function(){
+  var provider = new firebase.auth.GoogleAuthProvider();
+  window.fireAuth.signInWithPopup(provider).catch(function(err){
+    console.error('ログインに失敗:', err);
+    toast('ログインに失敗しました');
+  });
+});
+
+document.getElementById('btnLogout').addEventListener('click', function(){
+  window.fireAuth.signOut();
+});
 
 /* =========================================================
    TOAST
