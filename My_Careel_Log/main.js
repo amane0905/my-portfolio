@@ -119,19 +119,9 @@ function wipeAllData(){
   renderHome();
 }
 
-function isMobileBrowser(){
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
 document.getElementById('btnLogin').addEventListener('click', function(){
   var provider = new firebase.auth.GoogleAuthProvider();
-  if(isMobileBrowser()){
-    window.fireAuth.signInWithRedirect(provider);
-  } else {
-    window.fireAuth.signInWithPopup(provider).catch(function(err){
-      console.error('ログインに失敗:', err);
-      toast('ログインに失敗しました');
-    });
-  }
+  window.fireAuth.signInWithRedirect(provider);
 });
 window.fireAuth.getRedirectResult().catch(function(err){
   console.error('ログインに失敗:', err);
