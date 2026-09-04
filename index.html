@@ -1,25 +1,54 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ポートフォリオ</title>
-  <style>
-    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
-    h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
-    .card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-top: 20px; }
-    a { color: #0066cc; text-decoration: none; font-weight: bold; }
-    a:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
-  <h1>My Portfolio</h1>
-  <p>これまでに制作したプロジェクト一覧です。</p>
+<!-- ▼ ヘッダー部分 ▼ -->
+  <header style="text-align: center; margin-bottom: 24px;">
+    <h1 style="font-size: 2.2rem; margin-bottom: 8px; color: #5C4A3E; letter-spacing: 1px;">My Portfolio</h1>
+    <p style="font-size: 1rem; color: #9C7D60; margin: 0;">これまでに制作したプロジェクト一覧です。</p>
+  </header>
 
-  <div class="card">
-    <h2>Skill-Swap</h2>
-    <p>「時間」で学び合う、学生限定のスキルシェアアプリ。</p>
-    <a href="./Skill_Swap/index.html">アプリを開く →</a>
+  <!-- ▼ プロフィール（About Me） ▼ -->
+  <div style="max-width: 1000px; margin: 0 auto 32px; background-color: #FDF9F1; border: 1.5px solid #E8D7C5; border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); text-align: center;">
+    <h2 style="color: #C49A6C; margin-top: 0; font-size: 1.2rem;">👩‍💻 About Me</h2>
+    <p style="color: #7A6756; font-size: 0.95rem; line-height: 1.8; margin-bottom: 0;">
+      現在、Webフロントエンド技術（HTML / CSS / JavaScript）を中心に学習しています。<br>
+      「ユーザーにとって使いやすく、温かみのあるデザイン」を意識したものづくりが好きです。<br>
+      フロントエンドの実装だけでなく、Firebaseを用いた機能実装などにも挑戦しています。
+    </p>
   </div>
-</body>
-</html>
+
+  <!-- ▼ 作品一覧（グリッド） ▼ -->
+  <main style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto;">
+
+    <!-- 1つ目の作品：Skill-Swap -->
+    <div style="background-color: #FDF9F1; border: 1.5px solid #E8D7C5; border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+      <h2 style="color: #7A6756; margin-top: 0; font-size: 1.4rem;">☕ Skill-Swap</h2>
+      <p style="color: #7A6756; font-size: 0.95rem; line-height: 1.6;">
+        「時間」で学び合う、学生限定のスキルシェアアプリ。<br>
+        大学のメールアドレスを使った認証機能を実装し、安全なコミュニティを目指しました。
+      </p>
+
+      <div style="background-color: #fff; border-radius: 10px; padding: 12px; margin: 16px 0; border: 1px solid #F0E6D8;">
+        <strong style="color: #C49A6C; font-size: 0.9rem;">🛠 使用技術</strong>
+        <p style="color: #7A6756; font-size: 0.85rem; margin: 4px 0 0;">HTML / CSS / JavaScript / Firebase (Authentication)</p>
+      </div>
+
+      <!-- 新しく追加した「工夫した点」 -->
+      <div style="background-color: #fff; border-radius: 10px; padding: 12px; margin: 16px 0; border: 1px solid #F0E6D8;">
+        <strong style="color: #C49A6C; font-size: 0.9rem;">✨ 工夫した点</strong>
+        <p style="color: #7A6756; font-size: 0.85rem; line-height: 1.5; margin: 4px 0 0;">
+          セキュリティを考慮し、Firebase側でテストアカウント以外の一般登録を制限する処理を実装しました。UI面では、初学者が安心できるカフェのような温かい配色を採用しています。
+        </p>
+      </div>
+
+      <div style="background-color: #fff; border-radius: 10px; padding: 12px; margin: 16px 0; border: 1px solid #F0E6D8;">
+        <strong style="color: #C49A6C; font-size: 0.9rem;">💡 採用担当者様へ（テスト用アカウント）</strong>
+        <p style="color: #7A6756; font-size: 0.85rem; margin: 4px 0 0;">
+          test@university.ac.jp<br>
+          test1234
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 24px; flex-wrap: wrap;">
+        <a href="./Skill_Swap/index.html" style="background-color: #C49A6C; color: #fff; text-decoration: none; padding: 10px 16px; border-radius: 24px; font-size: 0.85rem; font-weight: bold; text-align: center; flex: 1;">アプリを開く</a>
+        <a href="https://github.com/amane0905/my-portfolio/tree/main/Skill_Swap" style="background-color: #fff; color: #C49A6C; border: 1.5px solid #C49A6C; text-decoration: none; padding: 10px 16px; border-radius: 24px; font-size: 0.85rem; font-weight: bold; text-align: center; flex: 1;">コードを見る</a>
+      </div>
+    </div>
+  </main>
