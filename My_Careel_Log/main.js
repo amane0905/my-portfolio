@@ -94,10 +94,28 @@ function updateAuthUI(){
 }
 
 window.fireAuth.onAuthStateChanged(function(user){
+  var previousUser = currentUser;
   currentUser = user;
   updateAuthUI();
-  if(user) loadFromCloud();
+  if(user){
+    loadFromCloud();
+  } else if(previousUser){
+    clearLocalData();
+  }
 });
+
+function clearLocalData(){
+  STATE.companies = [];
+  STATE.experiences = [];
+  STATE.values = [];
+  STATE.sevenDays = null;
+  STATE.columns = {value:[],strength:[],weakness:[],challenge:[]};
+  STATE.wordcloud = [];
+  persistAll();
+  showView('home');
+  renderHome();
+  toast('ログアウトしました');
+}
 
 document.getElementById('btnLogin').addEventListener('click', function(){
   var provider = new firebase.auth.GoogleAuthProvider();
