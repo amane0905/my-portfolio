@@ -313,3 +313,9 @@
     .wrap{ padding:0; }
     body{ background:#fff; }
   }
+  .wc-word{ position:relative; }
+  .wc-word-delete{
+    position:absolute; top:-8px; right:-8px; width:18px; height:18px; line-height:18px;
+    text-align:center; border-radius:50%; background:var(--ink); color:#fff;
+    font-size:0.7rem; cursor:pointer;
+  }

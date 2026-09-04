@@ -83,7 +83,7 @@ function updateAuthUI(){
   var authStatus = document.getElementById('authStatus');
   var btnLogin = document.getElementById('btnLogin');
   var authUserName = document.getElementById('authUserName');
-  if(currentUser){
+  if(currentUser && !currentUser.isAnonymous){
     btnLogin.style.display = 'none';
     authStatus.style.display = '';
     authUserName.textContent = currentUser.displayName || currentUser.email || 'ログイン中';
@@ -97,12 +97,12 @@ window.fireAuth.onAuthStateChanged(function(user){
   var previousUser = currentUser;
   currentUser = user;
   updateAuthUI();
-  if(user){
+  if(user && !user.isAnonymous){
     loadFromCloud();
-  } else if(previousUser){
-  wipeAllData();
-  toast('ログアウトしました');
-}
+  } else if(!user && previousUser && !previousUser.isAnonymous){
+    wipeAllData();
+    toast('ログアウトしました');
+  }
 });
 
 function wipeAllData(){
@@ -745,10 +745,17 @@ document.getElementById('btnPrintRecap').addEventListener('click', function(){
 /* Firestoreの共有コレクション（wordcloudAnswers）を使って、
    全端末・全ユーザーでリアルタイムに共有します。 */
 var wcSeenIds = {};
+function wcEnsureAuth(){
+  if(window.fireAuth.currentUser) return Promise.resolve(window.fireAuth.currentUser);
+  return window.fireAuth.signInAnonymously().then(function(cred){ return cred.user; });
+}
 function wcBroadcastSend(word){
-  window.fireDb.collection('wordcloudAnswers').add({
-    word: word,
-    ts: firebase.firestore.FieldValue.serverTimestamp()
+  wcEnsureAuth().then(function(user){
+    return window.fireDb.collection('wordcloudAnswers').add({
+      word: word,
+      uid: user.uid,
+      ts: firebase.firestore.FieldValue.serverTimestamp()
+    });
   }).catch(function(err){ console.error('送信に失敗:', err); toast('送信に失敗しました'); });
 }
 function wcBroadcastOnReceive(cb){
@@ -760,21 +767,21 @@ function wcBroadcastOnReceive(cb){
         if(change.type === 'added' && !wcSeenIds[change.doc.id]){
           wcSeenIds[change.doc.id] = true;
           var data = change.doc.data();
-          if(data.word) cb(data.word);
+          if(data.word) cb(data.word, change.doc.id, data.uid);
         }
       });
     }, function(err){ console.error('受信に失敗:', err); });
 }
 
-function wcAddWord(word, fromRemote){
+function wcAddWord(word, fromRemote, docId, uid){
   word = word.trim();
   if(!word) return;
   STATE.wordcloud.push({word:word, ts:Date.now()});
   save(KEYS.wordcloud, STATE.wordcloud);
-  spawnWord(word);
-  if(!fromRemote) wcBroadcastSend(word);
+  spawnWord(word, docId, uid);
 }
-function spawnWord(word){
+
+function spawnWord(word, docId, uid){
   var stage = document.getElementById('wcStage');
   var norm = word.trim().toLowerCase();
   var count = STATE.wordcloud.filter(function(w){ return w.word.trim().toLowerCase()===norm; }).length;
@@ -788,8 +795,22 @@ function spawnWord(word){
   el.style.left = (10+Math.random()*maxX)+'px';
   el.style.top = (10+Math.random()*maxY)+'px';
   el.style.animation = 'popIn 0.5s ease, popfloat '+(5+Math.random()*3)+'s ease-in-out '+0.5+'s infinite';
+  if(docId && window.fireAuth.currentUser && uid === window.fireAuth.currentUser.uid){
+    var x = document.createElement('span');
+    x.className = 'wc-word-delete';
+    x.textContent = '×';
+    x.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      if(!confirm('この投稿を削除しますか？')) return;
+      window.fireDb.collection('wordcloudAnswers').doc(docId).delete().then(function(){
+        el.remove();
+      }).catch(function(err){ console.error('削除に失敗:', err); toast('削除に失敗しました'); });
+    });
+    el.appendChild(x);
+  }
   stage.appendChild(el);
 }
+
 function replayWordcloud(){
   var stage = document.getElementById('wcStage');
   Array.prototype.slice.call(stage.querySelectorAll('.wc-word')).forEach(function(el){ el.remove(); });
@@ -802,11 +823,11 @@ document.getElementById('wcSubmit').addEventListener('click', function(){
   wcBroadcastSend(word);
   input.value='';
 });
-
 document.getElementById('wcInput').addEventListener('keydown', function(e){
   if(e.key==='Enter'){ document.getElementById('wcSubmit').click(); }
 });
 wcBroadcastOnReceive(function(word){ wcAddWord(word, true); });
+
 document.getElementById('btnRevealWc').addEventListener('click', function(){
   var stage = document.getElementById('wcStage');
   var layer = document.getElementById('wcRevealLayer');
