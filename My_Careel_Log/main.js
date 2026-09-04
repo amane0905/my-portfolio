@@ -83,14 +83,14 @@ function loadFromCloud(){
 
 function updateAuthUI(){
   var authStatus = document.getElementById('authStatus');
-  var btnLogin = document.getElementById('btnLogin');
+  var gsiContainer = document.getElementById('gsiButtonContainer');
   var authUserName = document.getElementById('authUserName');
   if(currentUser && !currentUser.isAnonymous){
-    btnLogin.style.display = 'none';
+    gsiContainer.style.display = 'none';
     authStatus.style.display = '';
     authUserName.textContent = currentUser.displayName || currentUser.email || 'ログイン中';
   } else {
-    btnLogin.style.display = '';
+    gsiContainer.style.display = '';
     authStatus.style.display = 'none';
   }
 }
@@ -119,16 +119,31 @@ function wipeAllData(){
   renderHome();
 }
 
-document.getElementById('btnLogin').addEventListener('click', function(){
-  var provider = new firebase.auth.GoogleAuthProvider();
-  window.fireAuth.signInWithPopup(provider).catch(function(err){
+var GOOGLE_WEB_CLIENT_ID = '243449033098-163feh4j55b2ovn5ulnu7vqlnpei4lqp.apps.googleusercontent.com';
+function handleGsiCredential(response){
+  var credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+  firebase.auth().signInWithCredential(credential).catch(function(err){
     console.error('ログインに失敗:', err);
     toast('ログインに失敗しました');
   });
-});
+}
+
+if(window.google && google.accounts && google.accounts.id){
+  google.accounts.id.initialize({
+    client_id: GOOGLE_WEB_CLIENT_ID,
+    callback: handleGsiCredential
+  });
+  google.accounts.id.renderButton(
+    document.getElementById('gsiButtonContainer'),
+    { theme: 'outline', size: 'medium', text: 'signin_with', shape: 'pill' }
+  );
+}
 
 document.getElementById('btnLogout').addEventListener('click', function(){
   window.fireAuth.signOut();
+  if(window.google && google.accounts && google.accounts.id){
+    google.accounts.id.disableAutoSelect();
+  }
 });
 
 /* =========================================================
@@ -285,7 +300,6 @@ function renderCompanyList(){
     card.type='button';
     card.className='note-card';
     card.innerHTML =
-      '<img class="nc-fox" src="img/fox.png" alt="チベットスナギツネ">'+
       '<h3>'+escapeHtml(c.name || '（名称未設定）')+'</h3>'+
       '<div class="nc-meta">'+escapeHtml(c.type||'')+(c.date? ' ・ '+escapeHtml(c.date):'')+'</div>'+
       '<div class="nc-stars">'+(avg? starString(avg)+' '+avg.toFixed(1) : '未評価')+'</div>'+

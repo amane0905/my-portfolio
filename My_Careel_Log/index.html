@@ -12,6 +12,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="https://accounts.google.com/gsi/client" defer></script>
 <script src="main.js" defer></script>
 </head>
 <body>
@@ -23,8 +24,8 @@
       <h1>インターン研究ノート <span class="hand" style="font-size:0.9em;color:var(--accent);">MY CAREER LOG</span></h1>
       <p class="sub">自分を知るたび、キャリアは自分だけのものになる。</p>
     </div>
-        <div class="auth-box" id="authBox">
-      <button type="button" class="btn small" id="btnLogin">Googleでログイン</button>
+      <div class="auth-box" id="authBox">
+      <div id="gsiButtonContainer"></div>
       <div class="auth-status" id="authStatus" style="display:none;">
         <span id="authUserName"></span>
         <button type="button" class="btn small ghost" id="btnLogout">ログアウト</button>
