@@ -1,5 +1,7 @@
 (function(){
 "use strict";
+if(window.__mclInitialized) return;
+window.__mclInitialized = true;
 
 /* =========================================================
    STORAGE
@@ -117,12 +119,23 @@ function wipeAllData(){
   renderHome();
 }
 
+function isMobileBrowser(){
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
 document.getElementById('btnLogin').addEventListener('click', function(){
   var provider = new firebase.auth.GoogleAuthProvider();
-  window.fireAuth.signInWithPopup(provider).catch(function(err){
-    console.error('ログインに失敗:', err);
-    toast('ログインに失敗しました');
-  });
+  if(isMobileBrowser()){
+    window.fireAuth.signInWithRedirect(provider);
+  } else {
+    window.fireAuth.signInWithPopup(provider).catch(function(err){
+      console.error('ログインに失敗:', err);
+      toast('ログインに失敗しました');
+    });
+  }
+});
+window.fireAuth.getRedirectResult().catch(function(err){
+  console.error('ログインに失敗:', err);
+  toast('ログインに失敗しました');
 });
 
 document.getElementById('btnLogout').addEventListener('click', function(){
@@ -641,23 +654,6 @@ document.getElementById('btnSaveSeven').addEventListener('click', function(){
   toast('7日間の記録を保存しました');
   renderRecap();
 });
-document.getElementById('btnSaveSeven').addEventListener('click', function(){
-  STATE.sevenDays = {
-    event: document.getElementById('sEvent').value,
-    feelings: Array.prototype.slice.call(document.querySelectorAll('#sFeelChips .chip')).filter(function(c){ return c.getAttribute('aria-pressed')==='true'; }).map(function(c){ return c.dataset.feel; }),
-    feelNote: document.getElementById('sFeelNote').value,
-    why: document.getElementById('sWhy').value,
-    question: document.getElementById('sQ').value,
-    whyQuestion: document.getElementById('sWhyQ').value,
-    newAwareness: document.getElementById('sNew').value,
-    grow: document.getElementById('sGrow').value,
-    rely: document.getElementById('sRely').value,
-    savedAt: Date.now()
-  };
-  persistAll();
-  toast('7日間の記録を保存しました');
-  renderRecap();
-});
 document.getElementById('btnDeleteSeven').addEventListener('click', function(){
   if(!confirm('7日間の記録を削除しますか？')) return;
   STATE.sevenDays = null;
@@ -826,7 +822,7 @@ document.getElementById('wcSubmit').addEventListener('click', function(){
 document.getElementById('wcInput').addEventListener('keydown', function(e){
   if(e.key==='Enter'){ document.getElementById('wcSubmit').click(); }
 });
-wcBroadcastOnReceive(function(word){ wcAddWord(word, true); });
+wcBroadcastOnReceive(function(word, docId, uid){ wcAddWord(word, true, docId, uid); });
 
 document.getElementById('btnRevealWc').addEventListener('click', function(){
   var stage = document.getElementById('wcStage');
