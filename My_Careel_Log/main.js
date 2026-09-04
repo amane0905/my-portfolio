@@ -584,7 +584,16 @@ function renderTimeline(){
       '<div class="tl-date">'+escapeHtml(e.date||'')+'　'+escapeHtml(e.type||'')+'</div>'+
       '<div class="tl-title">'+escapeHtml(e.title)+'</div>'+
       (e.awareness ? '<div class="tl-arrow">↓</div><div class="tl-awareness">'+escapeHtml(e.awareness)+'</div>' : '')+
-      '<div class="tl-tags">'+ (e.tags||[]).map(function(t){ return '<span class="chip small tagchip">'+escapeHtml(t)+'</span>'; }).join('') +'</div>';
+      '<div class="tl-tags">'+ (e.tags||[]).map(function(t){ return '<span class="chip small tagchip">'+escapeHtml(t)+'</span>'; }).join('') +'</div>'+
+      '<button type="button" class="btn small danger tl-delete">削除</button>';
+    item.querySelector('.tl-delete').addEventListener('click', function(){
+      if(!confirm('この記録を削除しますか？')) return;
+      STATE.experiences = STATE.experiences.filter(function(x){ return x.id !== e.id; });
+      persistAll();
+      renderTimeline();
+      renderHome();
+      toast('削除しました');
+    });
     wrap.appendChild(item);
   });
 }
@@ -631,6 +640,34 @@ document.getElementById('btnSaveSeven').addEventListener('click', function(){
   persistAll();
   toast('7日間の記録を保存しました');
   renderRecap();
+});
+document.getElementById('btnSaveSeven').addEventListener('click', function(){
+  STATE.sevenDays = {
+    event: document.getElementById('sEvent').value,
+    feelings: Array.prototype.slice.call(document.querySelectorAll('#sFeelChips .chip')).filter(function(c){ return c.getAttribute('aria-pressed')==='true'; }).map(function(c){ return c.dataset.feel; }),
+    feelNote: document.getElementById('sFeelNote').value,
+    why: document.getElementById('sWhy').value,
+    question: document.getElementById('sQ').value,
+    whyQuestion: document.getElementById('sWhyQ').value,
+    newAwareness: document.getElementById('sNew').value,
+    grow: document.getElementById('sGrow').value,
+    rely: document.getElementById('sRely').value,
+    savedAt: Date.now()
+  };
+  persistAll();
+  toast('7日間の記録を保存しました');
+  renderRecap();
+});
+document.getElementById('btnDeleteSeven').addEventListener('click', function(){
+  if(!confirm('7日間の記録を削除しますか？')) return;
+  STATE.sevenDays = null;
+  persistAll();
+  ['sEvent','sFeelNote','sWhy','sQ','sWhyQ','sNew','sGrow','sRely'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
+  document.querySelectorAll('#sFeelChips .chip').forEach(function(chip){ chip.setAttribute('aria-pressed','false'); });
+  renderRecap();
+  toast('削除しました');
 });
 
 var COL_MAP = {value:'colValue', strength:'colStrength', weakness:'colWeakness', challenge:'colChallenge'};
