@@ -121,11 +121,10 @@ function wipeAllData(){
 
 document.getElementById('btnLogin').addEventListener('click', function(){
   var provider = new firebase.auth.GoogleAuthProvider();
-  window.fireAuth.signInWithRedirect(provider);
-});
-window.fireAuth.getRedirectResult().catch(function(err){
-  console.error('ログインに失敗:', err);
-  toast('ログインに失敗しました');
+  window.fireAuth.signInWithPopup(provider).catch(function(err){
+    console.error('ログインに失敗:', err);
+    toast('ログインに失敗しました');
+  });
 });
 
 document.getElementById('btnLogout').addEventListener('click', function(){
