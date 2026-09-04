@@ -822,6 +822,12 @@ document.getElementById('fileImport').addEventListener('change', function(e){
   e.target.value='';
 });
 
+document.getElementById('btnResetAll').addEventListener('click', function(){
+  if(!confirm('すべてのデータを削除します。この操作は元に戻せません。よろしいですか？')) return;
+  wipeAllData();
+  toast('すべてのデータを削除しました');
+});
+
 /* =========================================================
    INIT
    ========================================================= */
