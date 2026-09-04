@@ -742,19 +742,30 @@ document.getElementById('btnPrintRecap').addEventListener('click', function(){
 /* =========================================================
    WORD CLOUD
    ========================================================= */
-/* WC_BACKEND: 現在はローカル（同一ブラウザのタブ間のみ）で共有します。
-   複数人のスマートフォンから1つの発表画面へリアルタイム送信したい場合は、
-   Firebase Realtime Database 等を用意し、以下2関数の中身を置き換えてください。
-     1) wcBroadcastSend(word)  … 送信時に呼ばれる
-     2) wcBroadcastOnReceive(callback) … 他端末からの受信時に callback(word) を呼ぶ
-   例）Firebaseの場合は push()/onChildAdded() を使って実装します。 */
-var wcChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('mcl_wordcloud_channel') : null;
+/* Firestoreの共有コレクション（wordcloudAnswers）を使って、
+   全端末・全ユーザーでリアルタイムに共有します。 */
+var wcSeenIds = {};
 function wcBroadcastSend(word){
-  if(wcChannel) wcChannel.postMessage({word:word, ts:Date.now()});
+  window.fireDb.collection('wordcloudAnswers').add({
+    word: word,
+    ts: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(function(err){ console.error('送信に失敗:', err); toast('送信に失敗しました'); });
 }
 function wcBroadcastOnReceive(cb){
-  if(wcChannel){ wcChannel.onmessage = function(e){ cb(e.data.word); }; }
+  window.fireDb.collection('wordcloudAnswers')
+    .orderBy('ts', 'desc')
+    .limit(200)
+    .onSnapshot(function(snapshot){
+      snapshot.docChanges().forEach(function(change){
+        if(change.type === 'added' && !wcSeenIds[change.doc.id]){
+          wcSeenIds[change.doc.id] = true;
+          var data = change.doc.data();
+          if(data.word) cb(data.word);
+        }
+      });
+    }, function(err){ console.error('受信に失敗:', err); });
 }
+
 function wcAddWord(word, fromRemote){
   word = word.trim();
   if(!word) return;
@@ -786,9 +797,12 @@ function replayWordcloud(){
 }
 document.getElementById('wcSubmit').addEventListener('click', function(){
   var input = document.getElementById('wcInput');
-  wcAddWord(input.value);
+  var word = input.value.trim();
+  if(!word) return;
+  wcBroadcastSend(word);
   input.value='';
 });
+
 document.getElementById('wcInput').addEventListener('keydown', function(e){
   if(e.key==='Enter'){ document.getElementById('wcSubmit').click(); }
 });
