@@ -791,6 +791,26 @@ function updateWordDeleteButton(entry, norm){
     entry.el.appendChild(x);
   }
 }
+var wcPlacedRects = [];
+function findNonOverlappingPosition(stage, maxX, maxY){
+  var w = 90, h = 34; // 単語1つあたりのだいたいの大きさ
+  var best = null, bestOverlap = Infinity;
+  for(var i=0; i<30; i++){
+    var x = 10 + Math.random()*maxX;
+    var y = 10 + Math.random()*maxY;
+    var overlap = 0;
+    for(var j=0; j<wcPlacedRects.length; j++){
+      var r = wcPlacedRects[j];
+      var ox = Math.max(0, Math.min(x+w, r.x+r.w) - Math.max(x, r.x));
+      var oy = Math.max(0, Math.min(y+h, r.y+r.h) - Math.max(y, r.y));
+      overlap += ox*oy;
+    }
+    if(overlap === 0){ best = {x:x, y:y}; break; }
+    if(overlap < bestOverlap){ bestOverlap = overlap; best = {x:x, y:y}; }
+  }
+  wcPlacedRects.push({x:best.x, y:best.y, w:w, h:h});
+  return best;
+}
 function spawnWord(word, docId, uid){
   var stage = document.getElementById('wcStage');
   var norm = word.trim().toLowerCase();
@@ -806,10 +826,11 @@ function spawnWord(word, docId, uid){
   el.className='wc-word';
   el.textContent = word;
   el.style.fontSize = '0.95rem';
-  var maxX = Math.max(stage.clientWidth - 140, 20);
+    var maxX = Math.max(stage.clientWidth - 140, 20);
   var maxY = Math.max(stage.clientHeight - 60, 20);
-  el.style.left = (10+Math.random()*maxX)+'px';
-  el.style.top = (10+Math.random()*maxY)+'px';
+  var pos = findNonOverlappingPosition(stage, maxX, maxY);
+  el.style.left = pos.x+'px';
+  el.style.top = pos.y+'px';
   el.style.animation = 'popIn 0.5s ease, popfloat '+(5+Math.random()*3)+'s ease-in-out 0.5s infinite';
   stage.appendChild(el);
   wcWordElements[norm] = {el:el, ids: uid ? [{docId:docId, uid:uid}] : [], count:1};
