@@ -43,6 +43,7 @@
     <button type="button" data-view="career" role="tab" aria-selected="false">キャリアログ</button>
     <button type="button" data-view="sevendays" role="tab" aria-selected="false">7日間の私</button>
     <button type="button" data-view="wordcloud" role="tab" aria-selected="false">やりがい広場</button>
+    <button type="button" data-view="yajima" role="tab" aria-selected="false">矢島コメント</button>
   </div>
 </nav>
 
@@ -365,7 +366,7 @@
         「やりがい広場」は、別のツール（ことばクラウド）でみんなの回答をリアルタイムに共有しています。<br>
        </p>
       <iframe src="https://shiba-ikumi.github.io/kotobanocloude/?room=GKFJ58"
-        style="width:100%; height:500px; border:2px dashed var(--border); border-radius:var(--radius);"
+        style="width:100%; height:85vh; max-height:900px; border:2px dashed var(--border); border-radius:var(--radius);"
         loading="lazy"></iframe>
       <p style="margin-top:0.6rem;">
         <a href="https://shiba-ikumi.github.io/kotobanocloude/?room=GKFJ58" target="_blank" rel="noopener" style="font-size:0.85rem;">うまく表示されない場合はこちらを開いてください</a>
@@ -377,6 +378,45 @@
       <p class="step">選ぶ経験も違う。</p>
       <p class="step">だから、積み上がるキャリアも違う。</p>
       <p class="step">自分を知ることは、自分だけにしか積めないキャリアをつくること。</p>
+    </div>
+  </section>
+
+    <!-- ============ YAJIMA FEEDBACK ============ -->
+  <section class="view" id="view-yajima">
+    <div class="lead">
+      <h2 class="hand">矢島さんとの7日間フィードバック</h2>
+      <p>1日ひとことずつ、7日間やり取りしよう。</p>
+    </div>
+
+    <p class="empty-state" id="yjLoginNeeded" style="display:none;">この機能を使うには、Googleでログインしてください。</p>
+
+    <div class="section" id="yjNameSetup" style="display:none;">
+      <h2>矢島さんに表示する名前</h2>
+      <p class="section-desc">矢島さんの生徒一覧に表示される名前です。あとで変更できます。</p>
+      <div class="field"><input type="text" id="yjNameInput" placeholder="例：山田 太郎"></div>
+      <div class="actions"><button type="button" class="btn primary" id="btnSaveYjName">この名前で登録する</button></div>
+    </div>
+
+    <div class="section" id="yjMentorList" style="display:none;">
+      <h2>生徒一覧</h2>
+      <div class="chips" id="yjStudentChips"></div>
+    </div>
+
+    <div class="chips" id="yjDayTabs" style="display:none; margin-top:1rem;"></div>
+
+    <div class="section" id="yjDayCard" style="display:none; margin-top:1rem;">
+      <h2 id="yjDayTitle">Day 1</h2>
+      <div class="field">
+        <label>今日のひとこと（生徒が編集できます）</label>
+        <textarea id="yjStudentText"></textarea>
+        <p class="hint" id="yjStudentMeta"></p>
+      </div>
+      <div class="field">
+        <label>矢島さんからのコメント（<span id="yjCommentRole">閲覧のみ</span>）</label>
+
+        <textarea id="yjMentorComment"></textarea>
+      </div>
+      <div class="actions"><button type="button" class="btn primary" id="btnSaveYajima">保存する</button></div>
     </div>
   </section>
 

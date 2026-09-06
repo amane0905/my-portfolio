@@ -164,6 +164,7 @@ function showView(name){
   if(name==='values') renderValues();
   if(name==='career') renderTimeline();
   if(name==='sevendays') renderSevenDays();
+  if(name==='yajima') renderYajima();
   if(name==='home') renderHome();
 }
 navButtons.forEach(function(b){
@@ -766,6 +767,142 @@ document.getElementById('btnResetAll').addEventListener('click', function(){
   if(!confirm('すべてのデータを削除します。この操作は元に戻せません。よろしいですか？')) return;
   wipeAllData();
   toast('すべてのデータを削除しました');
+});
+
+/* =========================================================
+   YAJIMA FEEDBACK
+   ========================================================= */
+var YAJIMA_EMAIL = 'ここに貼り替える'; // 例: yajima@example.com
+var yjViewingUid = null;
+var yjCurrentDay = 1;
+var yjCachedDoc = null;
+
+function isYajima(){
+  return currentUser && currentUser.email === YAJIMA_EMAIL;
+}
+
+function renderYajima(){
+  var loginNeeded = document.getElementById('yjLoginNeeded');
+  var nameSetup = document.getElementById('yjNameSetup');
+  var mentorList = document.getElementById('yjMentorList');
+  var dayTabs = document.getElementById('yjDayTabs');
+  var dayCard = document.getElementById('yjDayCard');
+
+  loginNeeded.style.display='none'; nameSetup.style.display='none';
+  mentorList.style.display='none'; dayTabs.style.display='none'; dayCard.style.display='none';
+
+  if(!currentUser){
+    loginNeeded.style.display='block';
+    return;
+  }
+
+  if(isYajima()){
+    mentorList.style.display='block';
+    loadStudentList();
+  } else {
+    yjViewingUid = currentUser.uid;
+
+    window.fireDb.collection('yajimaFeedback').doc(yjViewingUid).get().then(function(doc){
+      if(doc.exists && doc.data().studentName){
+        showYjDayUI();
+      } else {
+        nameSetup.style.display='block';
+        document.getElementById('yjNameInput').value = currentUser.displayName || '';
+      }
+    });
+  }
+}
+
+function loadStudentList(){
+  var wrap = document.getElementById('yjStudentChips');
+  wrap.innerHTML = '読み込み中...';
+  window.fireDb.collection('yajimaFeedback').get().then(function(snapshot){
+    wrap.innerHTML = '';
+    if(snapshot.empty){ wrap.innerHTML = '<p class="hint">まだ生徒の登録がありません。</p>'; return; }
+    snapshot.forEach(function(doc){
+      var data = doc.data();
+      var chip = document.createElement('button');
+      chip.type='button'; chip.className='chip';
+      chip.textContent = data.studentName || '（未登録）';
+      chip.addEventListener('click', function(){
+        yjViewingUid = doc.id;
+        showYjDayUI();
+      });
+      wrap.appendChild(chip);
+    });
+  });
+}
+
+document.getElementById('btnSaveYjName').addEventListener('click', function(){
+
+  var name = document.getElementById('yjNameInput').value.trim();
+  if(!name){ toast('名前を入力してください'); return; }
+  window.fireDb.collection('yajimaFeedback').doc(currentUser.uid).set({ studentName: name }, {merge:true})
+    .then(function(){ toast('登録しました'); showYjDayUI(); })
+    .catch(function(err){ console.error(err); toast('登録に失敗しました'); });
+});
+
+function showYjDayUI(){
+  document.getElementById('yjNameSetup').style.display='none';
+  document.getElementById('yjDayTabs').style.display='flex';
+  document.getElementById('yjDayCard').style.display='block';
+  document.getElementById('yjCommentRole').textContent = isYajima() ? 'あなたが編集できます' : '閲覧のみ';
+  buildYjDayTabs();
+  loadYjDay(yjCurrentDay);
+}
+
+function buildYjDayTabs(){
+  var wrap = document.getElementById('yjDayTabs');
+  wrap.innerHTML = '';
+  for(var i=1;i<=7;i++){
+    (function(day){
+      var chip = document.createElement('button');
+      chip.type='button'; chip.className='chip';
+      chip.textContent = 'Day '+day;
+      chip.setAttribute('aria-pressed', day===yjCurrentDay ? 'true':'false');
+      chip.addEventListener('click', function(){
+        yjCurrentDay = day;
+        wrap.querySelectorAll('.chip').forEach(function(c){ c.setAttribute('aria-pressed','false'); });
+        chip.setAttribute('aria-pressed','true');
+        loadYjDay(day);
+      });
+      wrap.appendChild(chip);
+
+    })(i);
+  }
+}
+
+function loadYjDay(day){
+  document.getElementById('yjDayTitle').textContent = 'Day '+day;
+  window.fireDb.collection('yajimaFeedback').doc(yjViewingUid).get().then(function(doc){
+    var data = doc.exists ? (doc.data().days || {}) : {};
+    var d = data['day'+day] || {};
+    var studentBox = document.getElementById('yjStudentText');
+    var mentorBox = document.getElementById('yjMentorComment');
+    studentBox.value = d.studentText || '';
+    mentorBox.value = d.mentorComment || '';
+    var meta = document.getElementById('yjStudentMeta');
+    meta.textContent = d.studentUpdatedAt ? ('生徒：最終更新 '+new Date(d.studentUpdatedAt).toLocaleString('ja-JP')) : '';
+    studentBox.disabled = isYajima();
+    mentorBox.disabled = !isYajima();
+  });
+}
+
+document.getElementById('btnSaveYajima').addEventListener('click', function(){
+  if(!yjViewingUid) return;
+  var docRef = window.fireDb.collection('yajimaFeedback').doc(yjViewingUid);
+  var update = {};
+  if(isYajima()){
+    update['days.day'+yjCurrentDay+'.mentorComment'] = document.getElementById('yjMentorComment').value;
+    update['days.day'+yjCurrentDay+'.mentorUpdatedAt'] = new Date().toISOString();
+  } else {
+    update['days.day'+yjCurrentDay+'.studentText'] = document.getElementById('yjStudentText').value;
+    update['days.day'+yjCurrentDay+'.studentUpdatedAt'] = new Date().toISOString();
+  }
+  docRef.set(update, {merge:true})
+
+    .then(function(){ toast('保存しました'); loadYjDay(yjCurrentDay); })
+    .catch(function(err){ console.error(err); toast('保存に失敗しました'); });
 });
 
 /* =========================================================
