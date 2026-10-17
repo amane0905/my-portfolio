@@ -1,40 +1,100 @@
-# Skill-Swap (Portfolio)
+# ☀ Skill-Swap
 
-学生向けスキル交換アプリです。現在は `index.html + js/*.js` の構成で動作しています。
+**「時間」で学び合う、学生だけのスキルシェアアプリです。**
+
+お金ではなく「時間（Time）」をやり取りの単位にして、学生どうしが得意なことを教え合えるサービスを目指しました。
+大学のメールアドレスでしか登録できない仕組みにすることで、学生が安心して使えるコミュニティを作ることを意識しています。
+
+🔗 **デモ**：https://amane0905.github.io/my-portfolio/Skill_Swap/
+
+<!-- スクリーンショットやGIFをここに（例： ![ホーム画面](../docs/skill-swap-home.png) ） -->
+
+---
+
+## テスト用アカウント
+
+| 項目 | 値 |
+|---|---|
+| メールアドレス | `test@university.ac.jp` |
+| パスワード | `test1234` |
+
+---
+
+## 制作のきっかけ
+
+<!-- ここは自分の言葉で書くのが一番伝わります。例：
+「大学で、得意なことを教えたい人と学びたい人がいるのに、つながる場がないと感じたことがきっかけです。」 -->
+
+---
+
+## 使い方
+
+1. **ログイン**：学校のメールアドレス（`ac.jp` / `.edu` など）で新規登録し、届いた確認メールで認証します。
+2. **プロフィール設定**：学校名を入力すると候補が表示されるので、選んで登録します。
+3. **スキルを探す・投稿する**：「教えたい（Give）」「学びたい（Seek）」のタブから、スキルを投稿したり探したりします。
+4. **マッチング・DM**：気になる相手とマッチングすると、メッセージでやり取りできます。
+5. **通話で学ぶ**：アプリ内の音声・ビデオ通話で実際にスキルを教え合います。
+6. **Timeの精算とレビュー**：学習が終わると、実際にかかった時間に応じて Time が自動で精算され、相手にレビューを書けます。
+
+---
 
 ## 主な機能
 
-- 学生メール認証 (Firebase Authentication)
-- スキル投稿 / マッチング
-- DM (Firestore)
-- 音声・ビデオ通話 (WebRTC + Firestore signaling)
-- ポイント予約・精算
+- 学生メールアドレス限定の登録と、メール認証（Firebase Authentication）
+- 大学名の入力補完（`data/schools.csv` の大学一覧を利用）
+- スキルの投稿・検索・マッチング
+- 1対1のメッセージ機能（Firestore によるリアルタイム更新）
+- 音声・ビデオ通話（WebRTC、接続情報のやり取りに Firestore を利用）
+- Time（ポイント）の予約と、通話時間に応じた自動精算
+- レビュー・評価機能
+- 通知機能（マッチ・レビュー・DM）
 
-## セットアップ
+---
 
-1. Firebase プロジェクトを作成
-2. Authentication で「メール/パスワード」を有効化
-3. Firestore Database を作成
-4. `js/firebase-config.js` の Firebase 設定値を自分のプロジェクト値に差し替え
-5. Firestore Rules に `js/firestore.rules.example.txt` を貼り付けて公開
+## 使用技術
 
-## 開発起動
+| 分類 | 技術 |
+|---|---|
+| フロントエンド | HTML / CSS / JavaScript |
+| 認証 | Firebase Authentication（メール / パスワード、メール認証） |
+| データベース | Cloud Firestore |
+| 通話 | WebRTC |
+| 公開 | GitHub Pages |
+
+---
+
+## 工夫した点
+
+- **安全なコミュニティ作り**：学生のメールアドレスかどうかをドメインで判定し、さらにメール認証を必須にすることで、学生以外が登録できないようにしました。
+- **Firestore セキュリティルール**：他人のデータを書き換えられないよう、ルールを設定しています（`js/firestore.rules.example.txt`）。
+- **時間に応じた公平な精算**：予約時に Time を仮で預かり、通話が終わったあと実際の時間との差額を返却・追加精算する仕組みにしました。
+- **デザイン**：初めて使う人でも安心できるよう、カフェのような温かい配色を採用しました。
+
+<!-- 実装で苦労したこと（例：WebRTC の接続がうまくいかなかった原因と解決方法など）を1〜2個書くと、面接で話しやすくなります -->
+
+---
+
+## 今後の改善予定
+
+- Firestore ルールの一部を Cloud Functions に移し、より厳密なデータ管理にする
+- `main.js`（約3,000行）を機能ごとのファイルに分割し、読みやすくする
+
+---
+
+## ローカルで動かす方法
+
+ビルドは不要です。静的ファイルとして配信すれば動作します。
 
 ```bash
-pnpm install
-pnpm dev
+git clone https://github.com/amane0905/my-portfolio.git
+cd my-portfolio/Skill_Swap
+npx serve .
 ```
 
-`http://localhost:8443` を開くとアプリを確認できます。
+自分の Firebase プロジェクトで動かす場合は、次の設定が必要です。
 
-## 新規登録テストで既存メールが邪魔なとき
-
-1. Firebase Console > Authentication > Users で対象メールを削除
-2. 必要に応じて Firestore の `authUsers/{uid}` と `users/{uid}` も削除
-3. ブラウザを再読み込みして再登録
-
-## 現在の注意点
-
-- 旧Monaca由来の `components/` は削除済みです。
-- 認証のパスワードは Firestore に保存していません。Firebase Authentication を正とします。
-- Firestore ルールはクライアント実装との整合のため、`users` 更新を一部広めに許可しています。将来的には Cloud Functions への移行でさらに厳密化できます。
+1. Firebase プロジェクトを作成する
+2. Authentication で「メール / パスワード」を有効にする
+3. Firestore Database を作成する
+4. `js/firebase-config.js` の設定値を自分のプロジェクトのものに差し替える
+5. Firestore のルールに `js/firestore.rules.example.txt` の内容を貼り付けて公開する
