@@ -11,8 +11,8 @@ Webフロントエンド（HTML / CSS / JavaScript）と Firebase を使って�
 
 | 作品 | 概要 | 主な技術 | リンク |
 |---|---|---|---|
-| ☀ **Skill-Swap** | 「時間」を通貨にして学生どうしがスキルを教え合う、学生限定のスキルシェアアプリです。🏆 アプリ開発ブートキャンプ優勝作品（5人チーム・2週間） | JavaScript / Firebase Auth / Firestore / WebRTC | [アプリ](https://amane0905.github.io/my-portfolio/Skill_Swap/) ・ [説明](./Skill_Swap/README.md) |
-| 📔 **MY CAREER LOG** | インターンや企業研究の記録を通して「自分を知る」ための就活ノートアプリです。就活ゼミのメンバー向けに1週間で個人開発しました。 | JavaScript / Firebase Auth（Googleログイン）/ Firestore | [アプリ](https://amane0905.github.io/my-portfolio/My_Careel_Log/) ・ [説明](./My_Careel_Log/README.md) |
+| ☀ **Skill-Swap** | 「時間」を通貨にして学生どうしがスキルを教え合う、学生限定のスキルシェアアプリです。🏆 アプリ開発ブートキャンプ優勝作品（5人チーム・2週間、Firebase まわりを担当） | JavaScript / Firebase Auth / Firestore / WebRTC | [アプリ](https://amane0905.github.io/my-portfolio/Skill_Swap/) ・ [説明](./Skill_Swap/README.md) |
+| 📔 **MY CAREER LOG** | インターンや企業研究の記録を通して「自分を知る」ための就活ノートアプリです。就活ゼミのメンバー向けに1週間で開発し、デザイン以外の機能をほぼ一人で実装しました。 | JavaScript / Firebase Auth（Googleログイン）/ Firestore | [アプリ](https://amane0905.github.io/my-portfolio/My_Careel_Log/) ・ [説明](./My_Careel_Log/README.md) |
 
 <!-- ここに各アプリのスクリーンショットを1枚ずつ並べると、一目で内容が伝わります -->
 <!-- 例： <img src="./docs/skill-swap.png" width="400"> <img src="./docs/career-log.png" width="400"> -->
