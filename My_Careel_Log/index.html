@@ -43,7 +43,7 @@
     <button type="button" data-view="career" role="tab" aria-selected="false">キャリアログ</button>
     <button type="button" data-view="sevendays" role="tab" aria-selected="false">7日間の私</button>
     <button type="button" data-view="wordcloud" role="tab" aria-selected="false">やりがい広場</button>
-    <button type="button" data-view="yajima" role="tab" aria-selected="false">矢島コメント</button>
+    <button type="button" data-view="yajima" role="tab" aria-selected="false">先生コメント</button>
   </div>
 </nav>
 
@@ -384,15 +384,15 @@
     <!-- ============ YAJIMA FEEDBACK ============ -->
   <section class="view" id="view-yajima">
     <div class="lead">
-      <h2 class="hand">矢島さんとの7日間フィードバック</h2>
+      <h2 class="hand">先生との7日間フィードバック</h2>
       <p>1日ひとことずつ、7日間やり取りしよう。</p>
     </div>
 
     <p class="empty-state" id="yjLoginNeeded" style="display:none;">この機能を使うには、Googleでログインしてください。</p>
 
     <div class="section" id="yjNameSetup" style="display:none;">
-      <h2>矢島さんに表示する名前</h2>
-      <p class="section-desc">矢島さんの生徒一覧に表示される名前です。あとで変更できます。</p>
+      <h2>先生に表示する名前</h2>
+      <p class="section-desc">先生の生徒一覧に表示される名前です。あとで変更できます。</p>
       <div class="field"><input type="text" id="yjNameInput" placeholder="例：山田 太郎"></div>
       <div class="actions"><button type="button" class="btn primary" id="btnSaveYjName">この名前で登録する</button></div>
     </div>
@@ -412,7 +412,7 @@
         <p class="hint" id="yjStudentMeta"></p>
       </div>
       <div class="field">
-        <label>矢島さんからのコメント（<span id="yjCommentRole">閲覧のみ</span>）</label>
+        <label>先生からのコメント（<span id="yjCommentRole">閲覧のみ</span>）</label>
 
         <textarea id="yjMentorComment"></textarea>
       </div>
