@@ -179,7 +179,10 @@ document.addEventListener("DOMContentLoaded", () => {
 // ===== 固定配置 =====
 const level_coefficients = { "初級": 1.0, "中級": 1.5, "上級": 2.0, "専門家": 3.0 };//レベルに応じた係数
 const avatar_colors = ["av-orange", "av-mint", "av-rose", "av-sky", "av-lime", "av-peach"];
-const student_domains = ["ac.jp", ".edu", "ac.uk", "edu.au", ".u-", "stud.", "student."];
+// 学生用メールとして認めるドメイン（@より後ろの「末尾」で判定する）
+const student_domain_suffixes = [".ac.jp", ".edu", ".ac.uk", ".edu.au"];
+// 海外の大学で使われる学生用サブドメイン（@より後ろの「先頭」で判定する）
+const student_domain_prefixes = ["stud.", "student."];
 const cat_emoji = { "言語":"🗣", "プログラミング":"💻", "デザイン":"🎨", "音楽":"🎵", "数学・理系":"📐", "ビジネス":"💼", "その他":"🌟" };
 
 // ===== アプリの実行状態 =====
@@ -402,7 +405,18 @@ function upsertLocalUserProfile(userId, profile) {
 }
 function getUserById(id) { return APP.users.find(u => u.id === id); }
 function renderStars(r) { return "★".repeat(Math.floor(r)) + "☆".repeat(5-Math.floor(r)); }
-function isStudentEmail(e) { return student_domains.some(d => e.toLowerCase().includes(d)); }
+// メールアドレスが学生用かどうかを判定する
+// 以前はアドレス全体に "ac.jp" などが「含まれているか」で判定していたため、
+// "student.taro@gmail.com" のような一般のアドレスも通ってしまっていた。
+// @より後ろのドメイン部分だけを取り出し、末尾・先頭で判定するように修正。
+function isStudentEmail(e) {
+  const email = String(e || "").trim().toLowerCase();
+  const parts = email.split("@");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return false;
+  const domain = parts[1];
+  return student_domain_suffixes.some(suffix => domain.endsWith(suffix))
+      || student_domain_prefixes.some(prefix => domain.startsWith(prefix));
+}
 function generateId(p) { return p + Date.now() + Math.random().toString(36).slice(2,6); }
 function nowTime() { const d=new Date(); return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; }
 function escapeHtml(str) {

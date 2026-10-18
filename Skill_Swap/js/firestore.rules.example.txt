@@ -1,12 +1,24 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // ログインしているか（メール確認前でもOK）
     function isSignedIn() {
       return request.auth != null;
     }
 
+    // ログインしていて、かつメール確認（学生認証）が済んでいるか。
+    // 画面側のチェックだけだと、ブラウザを通さず直接アクセスされた場合に
+    // 確認前のアカウントでもデータを読み書きできてしまうため、ルール側でも確認する。
+    // テスト用アカウント（採用担当者様向け）だけは例外として許可する。
+    function isVerified() {
+      return isSignedIn() && (
+        request.auth.token.email_verified == true
+        || request.auth.token.email == 'test@university.ac.jp'
+      );
+    }
+
     function isParticipant(data) {
-      return isSignedIn() && request.auth.uid in data.participants;
+      return isVerified() && request.auth.uid in data.participants;
     }
 
     function hasOnlyAllowedUserFields() {
@@ -24,11 +36,11 @@ service cloud.firestore {
     }
 
     function isSkillOwner(data) {
-      return isSignedIn() && data.userId == request.auth.uid;
+      return isVerified() && data.userId == request.auth.uid;
     }
 
     function isSkillParticipant(data) {
-      return isSignedIn() && (
+      return isVerified() && (
         data.teacherId == request.auth.uid ||
         data.learnerId == request.auth.uid
       );
@@ -36,7 +48,7 @@ service cloud.firestore {
 
     match /conversations/{convId} {
       allow read: if isParticipant(resource.data);
-      allow create: if isSignedIn()
+      allow create: if isVerified()
         && request.resource.data.participants is list
         && request.auth.uid in request.resource.data.participants;
       allow update, delete: if isParticipant(resource.data);
@@ -49,7 +61,7 @@ service cloud.firestore {
     }
 
     match /calls/{convId} {
-      allow read, write: if isSignedIn()
+      allow read, write: if isVerified()
         && (
           request.auth.uid == resource.data.callerId
           || request.auth.uid == resource.data.calleeId
@@ -58,7 +70,7 @@ service cloud.firestore {
         );
 
       match /callerCandidates/{docId} {
-        allow read, write: if isSignedIn()
+        allow read, write: if isVerified()
           && (
             request.auth.uid
               == get(/databases/$(database)/documents/calls/$(convId)).data.callerId
@@ -67,7 +79,7 @@ service cloud.firestore {
           );
       }
       match /calleeCandidates/{docId} {
-        allow read, write: if isSignedIn()
+        allow read, write: if isVerified()
           && (
             request.auth.uid
               == get(/databases/$(database)/documents/calls/$(convId)).data.callerId
@@ -78,33 +90,34 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isSignedIn();
+      allow read: if isVerified();
       // このアプリはクライアント側トランザクションで相手ユーザーの
       // matches / totalPoints も更新するため、更新者を本人に限定できない。
       // その代わり書き込み可能フィールドを制限する。
-      allow create, update: if isSignedIn() && hasOnlyAllowedUserFields();
-      allow delete: if isSignedIn() && request.auth.uid == userId;
+      allow create, update: if isVerified() && hasOnlyAllowedUserFields();
+      allow delete: if isVerified() && request.auth.uid == userId;
     }
 
+    // 新規登録の直後（メール確認前）に自分の登録情報を書き込むため、ここだけは確認前でも許可する
     match /authUsers/{userId} {
       allow read, write, delete: if isSignedIn() && request.auth.uid == userId;
     }
 
     match /skills/{skillId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && isSkillOwner(request.resource.data);
+      allow read: if isVerified();
+      allow create: if isVerified() && isSkillOwner(request.resource.data);
       allow update: if isSkillOwner(resource.data) || isSkillParticipant(resource.data);
       allow delete: if isSkillOwner(resource.data);
     }
 
     match /blocks/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if isVerified() && request.auth.uid == userId;
     }
 
     match /reports/{reportId} {
-      allow create: if isSignedIn();
+      allow create: if isVerified();
       // 現状は運営UIを実装していないため、作成者本人のみ読める設定にする。
-      allow read: if isSignedIn() && resource.data.reporterId == request.auth.uid;
+      allow read: if isVerified() && resource.data.reporterId == request.auth.uid;
       allow update, delete: if false;
     }
   }

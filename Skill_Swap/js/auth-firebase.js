@@ -39,7 +39,14 @@ async function resendVerificationEmail() {
 async function refreshEmailVerified() {
   if (!fireAuth.currentUser) return false;
   await fireAuth.currentUser.reload();
-  
+
+  // 確認済みになったら、ログイン情報（IDトークン）を取り直す。
+  // Firestoreのセキュリティルールはトークン内の email_verified を見ているため、
+  // 取り直さないと確認後もしばらく「未確認」として扱われてしまう。
+  if (fireAuth.currentUser.emailVerified) {
+    await fireAuth.currentUser.getIdToken(true);
+  }
+
   return fireAuth.currentUser.emailVerified;
 }
 
